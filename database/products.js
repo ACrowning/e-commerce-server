@@ -23,6 +23,6 @@ const products = [
     favorite: false,
     count: 1,
   },
-]
+];
 
-module.exports = { products }
+module.exports = { products };
