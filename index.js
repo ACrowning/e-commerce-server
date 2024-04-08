@@ -19,7 +19,9 @@ app.get("/elements", (req, res) => {
 });
 
 app.get("/elements/:id", function (req, res, next) {
-  res.json({ msg: "This is CORS-enabled for all origins!" });
+  const id = req.params.id;
+  const element = elements.find((element) => element.id === parseInt(id));
+  res.json(element);
 });
 
 app.listen(PORT, readyMessage);
