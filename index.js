@@ -18,6 +18,13 @@ app.get("/elements", (req, res) => {
   res.send({ data: elements });
 });
 
+app.post("/elements", (req, res) => {
+  const { title, amount, favorite } = req.body;
+  const newUser = { id: elements.length + 1, title, amount, favorite };
+  elements.push(newUser);
+  res.status(201).json({ message: "User created successfully" });
+});
+
 app.get("/elements/:id", function (req, res, next) {
   const id = req.params.id;
   const element = elements.find((element) => element.id === parseInt(id));
