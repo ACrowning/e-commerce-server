@@ -1,36 +1,40 @@
+const ShortUniqueId = require("short-unique-id");
+
+const uid = new ShortUniqueId({ length: 10 });
+
 const elements = [
   {
-    id: 1,
+    id: uid.rnd(),
     title: "string",
     amount: 1,
     favorite: false,
   },
   {
-    id: 2,
+    id: uid.rnd(),
     title: "the string",
     amount: 1,
     favorite: false,
   },
   {
-    id: 3,
+    id: uid.rnd(),
     title: "stringing",
     amount: 1,
     favorite: false,
   },
   {
-    id: 4,
+    id: uid.rnd(),
     title: "strings",
     amount: 1,
     favorite: false,
   },
   {
-    id: 5,
+    id: uid.rnd(),
     title: "stringer",
     amount: 1,
     favorite: false,
   },
   {
-    id: 6,
+    id: uid.rnd(),
     title: "string",
     amount: 1,
     favorite: false,

@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const ShortUniqueId = require("short-unique-id");
+
+const uid = new ShortUniqueId({ length: 10 });
 
 const { elements } = require("./database/elements");
 
@@ -20,9 +23,16 @@ app.get("/elements", (req, res) => {
 
 app.post("/elements", (req, res) => {
   const { title, amount, favorite } = req.body;
-  const newUser = { id: elements.length + 1, title, amount, favorite };
+  const newUser = { id: uid.rnd(), title, amount, favorite };
   elements.push(newUser);
-  res.status(201).json({ message: "User created successfully" });
+  res.status(201).json({ message: "Element created successfully" });
+});
+
+app.delete("/elements/:id", (req, res) => {
+  const elementId = parseInt(req.params.id);
+  const index = elements.findIndex((element) => element.id === elementId);
+  elements.splice(index, 1);
+  res.status(200).json({ message: "Element deleted successfully" });
 });
 
 app.get("/elements/:id", function (req, res, next) {
