@@ -25,14 +25,18 @@ app.post("/elements", (req, res) => {
   const { title, amount, favorite } = req.body;
   const newUser = { id: uid.rnd(), title, amount, favorite };
   elements.push(newUser);
-  res.status(201).json({ message: "Element created successfully" });
+  res
+    .status(201)
+    .json({ message: "Element created successfully", data: newUser });
 });
 
 app.delete("/elements/:id", (req, res) => {
-  const elementId = parseInt(req.params.id);
+  const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
-  elements.splice(index, 1);
-  res.status(200).json({ message: "Element deleted successfully" });
+  elements.splice(index, 1)[0];
+  res
+    .status(200)
+    .json({ message: "User deleted successfully", data: elementId });
 });
 
 app.get("/elements/:id", function (req, res, next) {
