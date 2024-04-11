@@ -41,7 +41,7 @@ app.delete("/elements/:id", (req, res) => {
 
 app.get("/elements/:id", function (req, res, next) {
   const id = req.params.id;
-  const element = elements.find((element) => element.id === parseInt(id));
+  const element = elements.find((element) => element.id === id);
   res.json(element);
 });
 
