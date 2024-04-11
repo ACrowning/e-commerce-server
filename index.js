@@ -33,7 +33,7 @@ app.post("/elements", (req, res) => {
 app.delete("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
-  elements.splice(index, 1)[0];
+  elements.splice(index, 1);
   res
     .status(200)
     .json({ message: "User deleted successfully", data: elementId });
