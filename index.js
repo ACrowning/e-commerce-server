@@ -33,6 +33,9 @@ app.post("/elements", (req, res) => {
 app.put("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
+  if (index === -1) {
+    return res.status(404).json({ message: "User not found" });
+  }
   elements[index] = {
     ...elements[index],
     ...req.body,
@@ -45,6 +48,9 @@ app.put("/elements/:id", (req, res) => {
 app.delete("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
+  if (index === -1) {
+    return res.status(404).json({ message: "User not found" });
+  }
   elements.splice(index, 1);
   res
     .status(200)
