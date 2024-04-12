@@ -30,6 +30,18 @@ app.post("/elements", (req, res) => {
     .json({ message: "Element created successfully", data: newUser });
 });
 
+app.put("/elements/:id", (req, res) => {
+  const elementId = req.params.id;
+  const index = elements.findIndex((element) => element.id === elementId);
+  elements[index] = {
+    ...elements[index],
+    ...req.body,
+  };
+  res
+    .status(200)
+    .json({ message: "User updated successfully", data: elementId });
+});
+
 app.delete("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
