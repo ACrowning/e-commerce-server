@@ -37,10 +37,17 @@ app.post("/elements", (req, res) => {
 
 app.post("/cart", (req, res) => {
   const newItem = req.body;
-  cartItems.push(newItem);
-  res
-    .status(201)
-    .json({ message: "Item added to cart successfully", data: cartItems });
+  const existingItem = cartItems.find((item) => item.id === newItem.id);
+  if (existingItem) {
+    existingItem.amount += newItem.amount;
+  } else {
+    cartItems.push(newItem);
+  }
+
+  res.status(201).json({
+    message: "Item added to cart successfully",
+    data: cartItems,
+  });
 });
 
 app.put("/elements/:id", (req, res) => {
