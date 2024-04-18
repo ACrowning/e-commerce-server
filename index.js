@@ -6,6 +6,7 @@ const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
 const { elements } = require("./database/elements");
+const { cartItems } = require("./database/cartItems");
 
 const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
@@ -21,6 +22,10 @@ app.get("/elements", (req, res) => {
   res.send({ data: elements });
 });
 
+app.get("/cart", (req, res) => {
+  res.send({ data: cartItems });
+});
+
 app.post("/elements", (req, res) => {
   const { title, amount, favorite } = req.body;
   const newUser = { id: uid.rnd(), title, amount, favorite };
@@ -30,11 +35,26 @@ app.post("/elements", (req, res) => {
     .json({ message: "Element created successfully", data: newUser });
 });
 
+app.post("/cart", (req, res) => {
+  const newItem = req.body;
+  const existingItem = cartItems.find((item) => item.id === newItem.id);
+  if (existingItem) {
+    existingItem.amount += newItem.amount;
+  } else {
+    cartItems.push(newItem);
+  }
+
+  res.status(201).json({
+    message: "Item added to cart successfully",
+    data: cartItems,
+  });
+});
+
 app.put("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
   if (index === -1) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "Not found" });
   }
   elements[index] = {
     ...elements[index],
@@ -49,7 +69,7 @@ app.delete("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
   if (index === -1) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "Not found" });
   }
   elements.splice(index, 1);
   res
