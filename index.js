@@ -65,6 +65,39 @@ app.put("/elements/:id", (req, res) => {
     .json({ message: "User updated successfully", data: elementId });
 });
 
+app.put("/cart/:id", (req, res) => {
+  const elementId = req.params.id;
+  const index = cartItems.findIndex((element) => element.id === elementId);
+  if (index === -1) {
+    return res.status(404).json({ message: "Not found" });
+  }
+
+  cartItems[index] = {
+    ...cartItems[index],
+    ...req.body,
+  };
+  res
+    .status(200)
+    .json({ message: "User updated successfully", data: elementId });
+});
+
+app.delete("/cart/:id", (req, res) => {
+  const elementId = req.params.id;
+  const indexCart = cartItems.findIndex((element) => element.id === elementId);
+  if (indexCart === -1) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  cartItems.splice(indexCart, 1);
+  const indexElement = elements.find((element) => element.id === elementId);
+  if (!indexElement) {
+    return res.status(404).json({ message: "Element not found" });
+  }
+  indexElement.amount += indexCart.amount;
+  res
+    .status(200)
+    .json({ message: "User deleted successfully", data: cartItems });
+});
+
 app.delete("/elements/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
