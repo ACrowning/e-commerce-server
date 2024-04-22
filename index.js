@@ -48,7 +48,13 @@ app.get("/cart", (req, res) => {
 
 app.post("/products/create", (req, res) => {
   const { title, amount, price, favorite } = req.body;
-  const newUser = { id: uid.rnd(), title, amount, price, favorite };
+  const newUser = {
+    id: uid.rnd(),
+    title,
+    amount,
+    price: price || Math.floor(Math.random() * 10),
+    favorite,
+  };
   elements.push(newUser);
   res
     .status(201)
