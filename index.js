@@ -18,17 +18,43 @@ app.get("/", (req, res) => {
   res.send({ data: "The server works successfully!" });
 });
 
-app.get("/elements", (req, res) => {
+app.get("/products", (req, res) => {
   res.send({ data: elements });
+});
+
+app.post("/products", (req, res) => {
+  const { title, sortByPrice } = req.body;
+
+  const filteredElements = elements.filter((element) =>
+    element.title.toLowerCase().includes(title.toLowerCase())
+  );
+  if (filteredElements) {
+    filteredElements.sort((a, b) => {
+      if (sortByPrice === "asc") {
+        return a.price - b.price;
+      } else if (sortByPrice === "desc") {
+        return b.price - a.price;
+      }
+    });
+    res.status(200).json({ sortedElements: filteredElements });
+  } else {
+    res.status(404).json({ message: "Not found" });
+  }
 });
 
 app.get("/cart", (req, res) => {
   res.send({ data: cartItems });
 });
 
-app.post("/elements", (req, res) => {
-  const { title, amount, favorite } = req.body;
-  const newUser = { id: uid.rnd(), title, amount, favorite };
+app.post("/products/create", (req, res) => {
+  const { title, amount, price, favorite } = req.body;
+  const newUser = {
+    id: uid.rnd(),
+    title,
+    amount,
+    price: price || Math.floor(Math.random() * 10),
+    favorite,
+  };
   elements.push(newUser);
   res
     .status(201)
@@ -50,7 +76,7 @@ app.post("/cart", (req, res) => {
   });
 });
 
-app.put("/elements/:id", (req, res) => {
+app.put("/products/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
   if (index === -1) {
@@ -98,7 +124,7 @@ app.delete("/cart/:id", (req, res) => {
     .json({ message: "User deleted successfully", data: cartItems });
 });
 
-app.delete("/elements/:id", (req, res) => {
+app.delete("/products/:id", (req, res) => {
   const elementId = req.params.id;
   const index = elements.findIndex((element) => element.id === elementId);
   if (index === -1) {
@@ -110,7 +136,7 @@ app.delete("/elements/:id", (req, res) => {
     .json({ message: "User deleted successfully", data: elementId });
 });
 
-app.get("/elements/:id", function (req, res, next) {
+app.get("/products/:id", function (req, res, next) {
   const id = req.params.id;
   const element = elements.find((element) => element.id === id);
   res.json(element);
