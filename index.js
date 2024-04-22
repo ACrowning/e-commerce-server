@@ -22,13 +22,30 @@ app.get("/elements", (req, res) => {
   res.send({ data: elements });
 });
 
+app.post("/elements/sort", (req, res) => {
+  const { title, sortByPrice } = req.body;
+
+  const filteredElements = elements.filter((element) =>
+    element.title.toLowerCase().includes(title.toLowerCase())
+  );
+
+  filteredElements.sort((a, b) => {
+    if (sortByPrice === "asc") {
+      return a.price - b.price;
+    } else if (sortByPrice === "desc") {
+      return b.price - a.price;
+    }
+  });
+  res.status(200).json({ sortedElements: filteredElements });
+});
+
 app.get("/cart", (req, res) => {
   res.send({ data: cartItems });
 });
 
 app.post("/elements", (req, res) => {
-  const { title, amount, favorite } = req.body;
-  const newUser = { id: uid.rnd(), title, amount, favorite };
+  const { title, amount, price, favorite } = req.body;
+  const newUser = { id: uid.rnd(), title, amount, price, favorite };
   elements.push(newUser);
   res
     .status(201)
