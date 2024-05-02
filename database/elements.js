@@ -2,7 +2,7 @@ const ShortUniqueId = require("short-unique-id");
 
 const uid = new ShortUniqueId({ length: 10 });
 
-const elements = [
+const products = [
   {
     id: uid.rnd(),
     title: "string",
@@ -47,4 +47,4 @@ const elements = [
   },
 ];
 
-module.exports = { elements };
+module.exports = products;
