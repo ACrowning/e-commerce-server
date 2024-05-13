@@ -3,14 +3,14 @@ const Router = express.Router();
 const { productService } = require("../services/products");
 
 Router.post("/", (req, res) => {
-  const { title, sortByPrice, currentPage, productsPerPage } = req.body;
+  const { title, sortByPrice, page, limit } = req.body;
 
-  const filteredProducts = productService.getProducts(
+  const filteredProducts = productService.getProducts({
     title,
     sortByPrice,
-    currentPage,
-    productsPerPage
-  );
+    page,
+    limit,
+  });
 
   if (filteredProducts) {
     res.status(200).json({ data: filteredProducts });
