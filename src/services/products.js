@@ -3,7 +3,7 @@ const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
 const productService = {
-  getProducts: (title, sortByPrice) => {
+  getProducts: ({ title, sortByPrice, page = 1, limit = 10 }) => {
     const filteredProducts = products.filter((product) =>
       product.title.toLowerCase().includes(title.toLowerCase())
     );
@@ -15,7 +15,20 @@ const productService = {
           return b.price - a.price;
         }
       });
-      return filteredProducts;
+
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const currentPage = filteredProducts.slice(startIndex, endIndex);
+
+      return {
+        currentPage,
+        total: Math.ceil(filteredProducts.length / limit),
+      };
+    } else {
+      return {
+        currentPage: [],
+        total: 0,
+      };
     }
   },
   createProduct: (title, amount, price, favorite) => {
