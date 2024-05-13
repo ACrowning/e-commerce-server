@@ -3,12 +3,17 @@ const Router = express.Router();
 const { productService } = require("../services/products");
 
 Router.post("/", (req, res) => {
-  const { title, sortByPrice } = req.body;
+  const { title, sortByPrice, currentPage, productsPerPage } = req.body;
 
-  const filteredProducts = productService.getProducts(title, sortByPrice);
+  const filteredProducts = productService.getProducts(
+    title,
+    sortByPrice,
+    currentPage,
+    productsPerPage
+  );
 
   if (filteredProducts) {
-    res.status(200).json({ sortedElements: filteredProducts });
+    res.status(200).json({ data: filteredProducts });
   } else {
     res.status(404).json({ message: "Not found" });
   }
