@@ -4,6 +4,7 @@ const app = express();
 
 const ProductRoutes = require("./src/controllers/products.js");
 const CartRoutes = require("./src/controllers/cart.js");
+const { comments } = require("./database/comments");
 
 const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
@@ -15,6 +16,10 @@ app.use("/cart", CartRoutes);
 
 app.get("/", (req, res) => {
   res.send({ data: "The server works successfully!" });
+});
+
+app.get("/comments", (req, res) => {
+  res.send({ data: comments });
 });
 
 app.listen(PORT, readyMessage);
