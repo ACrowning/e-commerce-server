@@ -6,7 +6,7 @@ const comments = [
   {
     id: uid.rnd(),
     text: "string",
-    comments: [],
+    comment: [],
     date: new Date(),
   },
 ];

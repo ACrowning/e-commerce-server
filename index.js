@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const ShortUniqueId = require("short-unique-id");
+const uid = new ShortUniqueId({ length: 10 });
 
 const ProductRoutes = require("./src/controllers/products.js");
 const CartRoutes = require("./src/controllers/cart.js");
@@ -20,6 +22,50 @@ app.get("/", (req, res) => {
 
 app.get("/comments", (req, res) => {
   res.send({ data: comments });
+});
+
+app.delete("/comments/:id", (req, res) => {
+  const commentId = req.params.id;
+  const indexComment = comments.findIndex(
+    (comment) => comment.id === commentId
+  );
+  if (indexComment === -1) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  comments.splice(indexComment, 1);
+
+  res
+    .status(200)
+    .json({ message: "Comment deleted successfully", data: comments });
+});
+
+app.put("/comments/:id", (req, res) => {
+  const commentId = req.params.id;
+  const indexComment = comments.findIndex(
+    (comment) => comment.id === commentId
+  );
+  if (indexComment === -1) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  comments[indexComment] = {
+    ...comments[indexComment],
+    ...req.body,
+  };
+
+  res
+    .status(200)
+    .json({ message: "Comment updated successfully", data: commentId });
+});
+
+app.post("/comments", (req, res) => {
+  const { text, comment } = req.body;
+  const newComment = { id: uid.rnd(), text, comment, date: new Date() };
+  comments.push(newComment);
+
+  res.status(201).json({
+    message: "Comment added successfully",
+    data: comments,
+  });
 });
 
 app.listen(PORT, readyMessage);
