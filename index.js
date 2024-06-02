@@ -57,17 +57,6 @@ app.put("/comments/:id", (req, res) => {
     .json({ message: "Comment updated successfully", data: commentId });
 });
 
-app.post("/comments", (req, res) => {
-  const { text, comment } = req.body;
-  const newComment = { id: uid.rnd(), text, comment, date: new Date() };
-  comments.push(newComment);
-
-  res.status(201).json({
-    message: "Comment added successfully",
-    data: comments,
-  });
-});
-
 app.listen(PORT, readyMessage);
 
 app.listen(80, function () {

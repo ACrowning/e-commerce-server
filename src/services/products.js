@@ -1,4 +1,5 @@
 const products = require("../../database/elements");
+const { comments } = require("../../database/comments");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -61,7 +62,30 @@ const productService = {
   },
 
   getElementById: (productId) => {
-    return products.find((product) => product.id === productId);
+    const product = products.find((product) => product.id === productId);
+    if (product) {
+      const productComments = comments.filter(
+        (comment) => comment.productId === productId
+      );
+      return {
+        ...product,
+        comments: productComments,
+      };
+    } else {
+      return null;
+    }
+  },
+
+  addComment: (productId, text) => {
+    const newComment = {
+      id: uid.rnd(),
+      productId,
+      text,
+      date: new Date(),
+      comment: [],
+    };
+    comments.push(newComment);
+    return newComment;
   },
 };
 
