@@ -73,14 +73,4 @@ Router.get("/:id", (req, res) => {
   }
 });
 
-Router.post("/comment", (req, res) => {
-  const { productId, text } = req.body;
-  const newComment = productService.addComment(productId, text);
-  if (newComment) {
-    res.status(201).json({ data: newComment });
-  } else {
-    res.status(400).json({ message: "Unable to add comment" });
-  }
-});
-
 module.exports = Router;

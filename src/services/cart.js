@@ -5,6 +5,7 @@ const cartService = {
   getCart: () => {
     return cartItems;
   },
+
   addItemToCart: (newItem) => {
     const existingItemIndex = cartItems.findIndex(
       (item) => item.id === newItem.id

@@ -75,18 +75,6 @@ const productService = {
       return null;
     }
   },
-
-  addComment: (productId, text) => {
-    const newComment = {
-      id: uid.rnd(),
-      productId,
-      text,
-      date: new Date(),
-      comment: [],
-    };
-    comments.push(newComment);
-    return newComment;
-  },
 };
 
 module.exports = { productService };
