@@ -67,7 +67,7 @@ Router.get("/:id", (req, res) => {
   const productId = req.params.id;
   const element = productService.getElementById(productId);
   if (element) {
-    res.json(element);
+    res.json({ data: element });
   } else {
     res.status(404).json({ message: "Not found" });
   }
