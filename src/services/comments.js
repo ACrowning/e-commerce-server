@@ -2,6 +2,54 @@ const { comments } = require("../../database/comments");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
+const addNestedComment = (commentList, newComment, parentCommentId) => {
+  for (let comment of commentList) {
+    if (comment.id === parentCommentId) {
+      comment.comments.push(newComment);
+      return true;
+    }
+    if (comment.comments.length > 0) {
+      const added = addNestedComment(
+        comment.comments,
+        newComment,
+        parentCommentId
+      );
+      if (added) return true;
+    }
+  }
+};
+
+const findAndRemoveComment = (commentList, commentId) => {
+  for (let i = 0; i < commentList.length; i++) {
+    if (commentList[i].id === commentId) {
+      commentList.splice(i, 1);
+      return true;
+    }
+    if (commentList[i].comments.length > 0) {
+      const found = findAndRemoveComment(commentList[i].comments, commentId);
+      if (found) return true;
+    }
+  }
+};
+
+const findAndUpdateComment = (commentList, commentId, newText) => {
+  for (let i = 0; i < commentList.length; i++) {
+    if (commentList[i].id === commentId) {
+      commentList[i].text = newText;
+      commentList[i].date = new Date();
+      return true;
+    }
+    if (commentList[i].comments.length > 0) {
+      const updated = findAndUpdateComment(
+        commentList[i].comments,
+        commentId,
+        newText
+      );
+      if (updated) return true;
+    }
+  }
+};
+
 const commentsService = {
   getComments: () => {
     return comments;
@@ -21,21 +69,7 @@ const commentsService = {
     };
 
     if (parentCommentId) {
-      const addNestedComment = (commentList) => {
-        for (let comment of commentList) {
-          if (comment.id === parentCommentId) {
-            comment.comments.push(newComment);
-            return true;
-          }
-          if (comment.comments.length > 0) {
-            const added = addNestedComment(comment.comments);
-            if (added) return true;
-          }
-        }
-        return false;
-      };
-
-      addNestedComment(comments);
+      addNestedComment(comments, newComment, parentCommentId);
     } else {
       comments.push(newComment);
     }
@@ -44,41 +78,12 @@ const commentsService = {
   },
 
   removeComment: (commentId) => {
-    const findAndRemoveComment = (comments) => {
-      for (let i = 0; i < comments.length; i++) {
-        if (comments[i].id === commentId) {
-          comments.splice(i, 1);
-          return true;
-        }
-        if (comments[i].comments.length > 0) {
-          const found = findAndRemoveComment(comments[i].comments);
-          if (found) return true;
-        }
-      }
-      return false;
-    };
-
-    findAndRemoveComment(comments);
+    findAndRemoveComment(comments, commentId);
     return comments;
   },
 
   editComment: (commentId, newText) => {
-    const findAndUpdateComment = (commentList) => {
-      for (let i = 0; i < commentList.length; i++) {
-        if (commentList[i].id === commentId) {
-          commentList[i].text = newText;
-          commentList[i].date = new Date();
-          return true;
-        }
-        if (commentList[i].comments.length > 0) {
-          const updated = findAndUpdateComment(commentList[i].comments);
-          if (updated) return true;
-        }
-      }
-      return false;
-    };
-
-    findAndUpdateComment(comments);
+    findAndUpdateComment(comments, commentId, newText);
     return comments;
   },
 };
