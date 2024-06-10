@@ -1,5 +1,8 @@
 const express = require("express");
 const Router = express.Router();
+const fileUpload = require("express-fileupload");
+const fs = require("fs");
+const path = require("path");
 const { productService } = require("../services/products");
 
 Router.post("/", (req, res) => {
@@ -19,23 +22,46 @@ Router.post("/", (req, res) => {
   }
 });
 
+Router.use(fileUpload());
+
+const uploadDir = path.join(__dirname, "../../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 Router.post("/create", (req, res) => {
   const { title, amount, price, favorite } = req.body;
 
-  const createdProduct = productService.createProduct(
-    title,
-    amount,
-    price,
-    favorite
-  );
-
-  if (createdProduct) {
-    res
-      .status(201)
-      .json({ message: "Element created successfully", data: createdProduct });
-  } else {
-    res.status(500).json({ message: "Failed to create element" });
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send("No files were uploaded.");
   }
+
+  let image = req.files.image;
+
+  let uploadPath = path.join(uploadDir, image.name);
+
+  image.mv(uploadPath, (err) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+
+    const createdProduct = productService.createProduct(
+      title,
+      amount,
+      price,
+      favorite,
+      uploadPath
+    );
+
+    if (createdProduct) {
+      res.status(201).json({
+        message: "Element created successfully",
+        data: createdProduct,
+      });
+    } else {
+      res.status(500).json({ message: "Failed to create element" });
+    }
+  });
 });
 
 Router.put("/:id", (req, res) => {

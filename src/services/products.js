@@ -32,17 +32,20 @@ const productService = {
       };
     }
   },
-  createProduct: (title, amount, price, favorite) => {
-    const newUser = {
+
+  createProduct: (title, amount, price, favorite, imagePath) => {
+    const newProduct = {
       id: uid.rnd(),
       title,
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
+      imagePath,
     };
-    products.push(newUser);
-    return newUser;
+    products.push(newProduct);
+    return newProduct;
   },
+
   editTitle: (productId, updatedData) => {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {
@@ -53,6 +56,7 @@ const productService = {
       return products[index];
     }
   },
+
   deleteProduct: (productId) => {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {
