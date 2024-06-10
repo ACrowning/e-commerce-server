@@ -33,14 +33,14 @@ const productService = {
     }
   },
 
-  createProduct: (title, amount, price, favorite, imagePath) => {
+  createProduct: (title, amount, price, favorite, imageName) => {
     const newProduct = {
       id: uid.rnd(),
       title,
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
-      imagePath,
+      imageName,
     };
     products.push(newProduct);
     return newProduct;
