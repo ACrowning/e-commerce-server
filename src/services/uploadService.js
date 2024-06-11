@@ -25,6 +25,18 @@ const saveImage = async (image) => {
   return imageName;
 };
 
+const saveAlbum = async (albumPhotos) => {
+  const albumNames = [];
+
+  for (const photo of albumPhotos) {
+    const imageName = await saveImage(photo);
+    albumNames.push(imageName);
+  }
+
+  return albumNames;
+};
+
 module.exports = {
   saveImage,
+  saveAlbum,
 };

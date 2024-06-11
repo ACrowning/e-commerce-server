@@ -2,7 +2,6 @@ const express = require("express");
 const Router = express.Router();
 const fileUpload = require("express-fileupload");
 const { productService } = require("../services/products");
-const uploadService = require("../services/uploadService");
 
 Router.post("/", (req, res) => {
   const { title, sortByPrice, page, limit } = req.body;
@@ -30,15 +29,19 @@ Router.post("/create", async (req, res) => {
     return res.status(400).send("No files were uploaded.");
   }
 
-  try {
-    const imageName = await uploadService.saveImage(req.files.image);
+  const image = req.files.image;
+  const albumPhotos = Array.isArray(req.files.albumPhotos)
+    ? req.files.albumPhotos
+    : [req.files.albumPhotos];
 
+  try {
     const createdProduct = productService.createProduct(
       title,
       amount,
       price,
       favorite,
-      imageName
+      image,
+      albumPhotos
     );
 
     res
