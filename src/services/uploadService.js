@@ -26,12 +26,12 @@ const saveImage = async (image) => {
 };
 
 const saveAlbum = async (albumPhotos) => {
-  const albumNames = [];
-
+  const promises = [];
   for (const photo of albumPhotos) {
-    const imageName = await saveImage(photo);
-    albumNames.push(imageName);
+    promises.push(saveImage(photo));
   }
+
+  const albumNames = await Promise.all(promises);
 
   return albumNames;
 };
