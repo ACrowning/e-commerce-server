@@ -1,5 +1,6 @@
 const products = require("../../database/elements");
 const { comments } = require("../../database/comments");
+const uploadService = require("../services/uploadService");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -32,17 +33,24 @@ const productService = {
       };
     }
   },
-  createProduct: (title, amount, price, favorite) => {
-    const newUser = {
+
+  createProduct: async (title, amount, price, favorite, image, albumPhotos) => {
+    const imageName = await uploadService.saveImage(image);
+    const albumNames = await uploadService.saveAlbum(albumPhotos);
+
+    const newProduct = {
       id: uid.rnd(),
       title,
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
+      imageName,
+      album: albumNames,
     };
-    products.push(newUser);
-    return newUser;
+    products.push(newProduct);
+    return newProduct;
   },
+
   editTitle: (productId, updatedData) => {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {
@@ -53,6 +61,7 @@ const productService = {
       return products[index];
     }
   },
+
   deleteProduct: (productId) => {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {

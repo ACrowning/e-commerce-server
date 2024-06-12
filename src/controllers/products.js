@@ -1,5 +1,6 @@
 const express = require("express");
 const Router = express.Router();
+const fileUpload = require("express-fileupload");
 const { productService } = require("../services/products");
 
 Router.post("/", (req, res) => {
@@ -19,22 +20,35 @@ Router.post("/", (req, res) => {
   }
 });
 
-Router.post("/create", (req, res) => {
+Router.use(fileUpload());
+
+Router.post("/create", async (req, res) => {
   const { title, amount, price, favorite } = req.body;
 
-  const createdProduct = productService.createProduct(
-    title,
-    amount,
-    price,
-    favorite
-  );
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send("No files were uploaded.");
+  }
 
-  if (createdProduct) {
+  const image = req.files.image;
+  const albumPhotos = Array.isArray(req.files.albumPhotos)
+    ? req.files.albumPhotos
+    : [req.files.albumPhotos];
+
+  try {
+    const createdProduct = productService.createProduct(
+      title,
+      amount,
+      price,
+      favorite,
+      image,
+      albumPhotos
+    );
+
     res
       .status(201)
       .json({ message: "Element created successfully", data: createdProduct });
-  } else {
-    res.status(500).json({ message: "Failed to create element" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create element", error: err });
   }
 });
 

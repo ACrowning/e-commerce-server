@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: "*" }));
 app.use("/products", ProductRoutes);
 app.use("/cart", CartRoutes);
