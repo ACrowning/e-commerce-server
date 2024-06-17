@@ -1,6 +1,6 @@
 const products = require("../../database/elements");
 const { comments } = require("../../database/comments");
-const uploadService = require("../services/uploadService");
+const { saveImage, saveAlbum } = require("../services/uploadService");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -35,8 +35,19 @@ const productService = {
   },
 
   createProduct: async (title, amount, price, favorite, image, albumPhotos) => {
-    const imageName = await uploadService.saveImage(image);
-    const albumNames = await uploadService.saveAlbum(albumPhotos);
+    let imageName = null;
+    let albumNames = [];
+
+    if (image) {
+      imageName = await saveImage(image);
+    }
+
+    if (albumPhotos && albumPhotos.length > 0) {
+      albumNames = await saveAlbum(albumPhotos);
+    }
+
+    // const imageName = await saveImage(image);
+    // const albumNames = albumPhotos ? await saveAlbum(albumPhotos) : [];
 
     const newProduct = {
       id: uid.rnd(),
@@ -44,7 +55,7 @@ const productService = {
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
-      imageName,
+      image: imageName,
       album: albumNames,
     };
     products.push(newProduct);
