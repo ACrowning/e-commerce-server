@@ -11,7 +11,7 @@ const products = Array(20)
       amount: 1,
       price: 1 + index + 1,
       favorite: false,
-      image: "https://picsum.photos/300/300?random",
+      image: null,
       albumPhotos: [],
     };
   });
