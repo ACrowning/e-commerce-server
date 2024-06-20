@@ -1,4 +1,6 @@
 const products = require("../../database/elements");
+const fs = require("fs/promises");
+const path = require("path");
 const { comments } = require("../../database/comments");
 const { saveImage, saveAlbum } = require("../services/uploadService");
 const ShortUniqueId = require("short-unique-id");
@@ -35,26 +37,22 @@ const productService = {
   },
 
   createProduct: async (title, amount, price, favorite, image, albumPhotos) => {
-    let imageName = null;
-    let albumNames = [];
-
-    if (image) {
-      imageName = await saveImage(image);
-    }
-
-    if (albumPhotos && albumPhotos.length > 0) {
-      albumNames = await saveAlbum(albumPhotos);
-    }
-
     const newProduct = {
       id: uid.rnd(),
       title,
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
-      image: imageName,
-      album: albumNames,
     };
+
+    if (image) {
+      newProduct.image = await saveImage(image);
+    }
+
+    if (albumPhotos && albumPhotos.length > 0) {
+      newProduct.albumPhotos = await saveAlbum(albumPhotos);
+    }
+
     products.push(newProduct);
     return newProduct;
   },
@@ -70,28 +68,35 @@ const productService = {
     }
   },
 
-  deleteProduct: (productId) => {
+  deleteProduct: async (productId) => {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {
       const deletedProduct = products.splice(index, 1)[0];
 
-      // const imagePath = path.join(
-      //   __dirname,
-      //   "../../uploads",
-      //   deletedProduct.image
-      // );
-      // if (fs.existsSync(imagePath)) {
-      //   fs.unlinkSync(imagePath);
-      // }
+      try {
+        const imagePath = path.join(
+          __dirname,
+          "../../uploads",
+          deletedProduct.image
+        );
+        await fs.unlink(imagePath);
 
-      // if (deletedProduct.albumPhotos && deletedProduct.albumPhotos.length > 0) {
-      //   deletedProduct.albumPhotos.forEach((photo) => {
-      //     const photoPath = path.join(__dirname, "../../uploads", photo);
-      //     if (fs.existsSync(photoPath)) {
-      //       fs.unlinkSync(photoPath);
-      //     }
-      //   });
-      // }
+        if (
+          deletedProduct.albumPhotos &&
+          deletedProduct.albumPhotos.length > 0
+        ) {
+          const deletePromises = deletedProduct.albumPhotos.map(
+            async (photo) => {
+              const photoPath = path.join(__dirname, "../../uploads", photo);
+              await fs.unlink(photoPath);
+            }
+          );
+
+          await Promise.all(deletePromises);
+        }
+      } catch (error) {
+        console.error("Failed to delete product images:", error);
+      }
 
       return deletedProduct.id;
     }

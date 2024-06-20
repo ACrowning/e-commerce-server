@@ -25,15 +25,14 @@ Router.use(fileUpload());
 Router.post("/create", async (req, res) => {
   try {
     const { title, amount, price, favorite } = req.body;
-    const { image, albumPhotos } = req.files || {};
+    const image = req.files?.image || null;
+    const albumPhotos = req.files?.albumPhotos || [];
 
-    const albumPhotosArray = albumPhotos
-      ? Array.isArray(albumPhotos)
-        ? albumPhotos
-        : [albumPhotos]
-      : [];
+    const albumPhotosArray = Array.isArray(albumPhotos)
+      ? albumPhotos
+      : [albumPhotos];
 
-    const createdProduct = productService.createProduct(
+    const createdProduct = await productService.createProduct(
       title,
       amount,
       price,
