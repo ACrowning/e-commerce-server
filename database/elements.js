@@ -12,7 +12,7 @@ const products = Array(20)
       price: 1 + index + 1,
       favorite: false,
       image: null,
-      albumPhotos: [],
+      albumPhotos: ["7dWi32B6Pj.JPG", "7dWi32B6Pj.JPG"],
     };
   });
 

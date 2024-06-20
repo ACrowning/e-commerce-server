@@ -46,9 +46,6 @@ const productService = {
       albumNames = await saveAlbum(albumPhotos);
     }
 
-    // const imageName = await saveImage(image);
-    // const albumNames = albumPhotos ? await saveAlbum(albumPhotos) : [];
-
     const newProduct = {
       id: uid.rnd(),
       title,
@@ -77,6 +74,25 @@ const productService = {
     const index = products.findIndex((product) => product.id === productId);
     if (index !== -1) {
       const deletedProduct = products.splice(index, 1)[0];
+
+      // const imagePath = path.join(
+      //   __dirname,
+      //   "../../uploads",
+      //   deletedProduct.image
+      // );
+      // if (fs.existsSync(imagePath)) {
+      //   fs.unlinkSync(imagePath);
+      // }
+
+      // if (deletedProduct.albumPhotos && deletedProduct.albumPhotos.length > 0) {
+      //   deletedProduct.albumPhotos.forEach((photo) => {
+      //     const photoPath = path.join(__dirname, "../../uploads", photo);
+      //     if (fs.existsSync(photoPath)) {
+      //       fs.unlinkSync(photoPath);
+      //     }
+      //   });
+      // }
+
       return deletedProduct.id;
     }
   },

@@ -43,12 +43,10 @@ Router.post("/create", async (req, res) => {
     );
 
     if (createdProduct) {
-      res
-        .status(201)
-        .json({
-          message: "Product created successfully",
-          data: createdProduct,
-        });
+      res.status(201).json({
+        message: "Product created successfully",
+        data: createdProduct,
+      });
     } else {
       res.status(500).json({ message: "Failed to create product" });
     }
