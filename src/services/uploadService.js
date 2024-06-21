@@ -19,7 +19,16 @@ const saveAlbum = async (albumPhotos) => {
   return albumNames;
 };
 
+const getImgPath = (imageName) => {
+  if (imageName) {
+    return path.join(__dirname, "../../uploads", imageName);
+  } else {
+    return null;
+  }
+};
+
 module.exports = {
   saveImage,
   saveAlbum,
+  getImgPath,
 };

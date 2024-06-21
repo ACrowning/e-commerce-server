@@ -2,7 +2,11 @@ const products = require("../../database/elements");
 const fs = require("fs/promises");
 const path = require("path");
 const { comments } = require("../../database/comments");
-const { saveImage, saveAlbum } = require("../services/uploadService");
+const {
+  saveImage,
+  saveAlbum,
+  getImgPath,
+} = require("../services/uploadService");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -74,11 +78,7 @@ const productService = {
       const deletedProduct = products.splice(index, 1)[0];
 
       try {
-        const imagePath = path.join(
-          __dirname,
-          "../../uploads",
-          deletedProduct.image
-        );
+        const imagePath = getImgPath(deletedProduct.image);
         await fs.unlink(imagePath);
 
         if (
@@ -87,8 +87,8 @@ const productService = {
         ) {
           const deletePromises = deletedProduct.albumPhotos.map(
             async (photo) => {
-              const photoPath = path.join(__dirname, "../../uploads", photo);
-              await fs.unlink(photoPath);
+              const photoPath = getImgPath(photo);
+              return fs.unlink(photoPath);
             }
           );
 
