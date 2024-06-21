@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const path = require("path");
 
 const ProductRoutes = require("./src/controllers/products.js");
 const CartRoutes = require("./src/controllers/cart.js");
@@ -15,6 +16,7 @@ app.use(cors({ origin: "*" }));
 app.use("/products", ProductRoutes);
 app.use("/cart", CartRoutes);
 app.use("/comments", CommentsRoutes);
+app.use("/static", express.static(path.join("uploads")));
 
 app.get("/", (req, res) => {
   res.send({ data: "The server works successfully!" });

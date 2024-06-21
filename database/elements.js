@@ -11,6 +11,8 @@ const products = Array(20)
       amount: 1,
       price: 1 + index + 1,
       favorite: false,
+      image: null,
+      albumPhotos: [],
     };
   });
 

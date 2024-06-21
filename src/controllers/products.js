@@ -23,32 +23,34 @@ Router.post("/", (req, res) => {
 Router.use(fileUpload());
 
 Router.post("/create", async (req, res) => {
-  const { title, amount, price, favorite } = req.body;
-
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).send("No files were uploaded.");
-  }
-
-  const image = req.files.image;
-  const albumPhotos = Array.isArray(req.files.albumPhotos)
-    ? req.files.albumPhotos
-    : [req.files.albumPhotos];
-
   try {
-    const createdProduct = productService.createProduct(
+    const { title, amount, price, favorite } = req.body;
+    const image = req.files?.image || null;
+    const albumPhotos = req.files?.albumPhotos || [];
+
+    const albumPhotosArray = Array.isArray(albumPhotos)
+      ? albumPhotos
+      : [albumPhotos];
+
+    const createdProduct = await productService.createProduct(
       title,
       amount,
       price,
       favorite,
       image,
-      albumPhotos
+      albumPhotosArray
     );
 
-    res
-      .status(201)
-      .json({ message: "Element created successfully", data: createdProduct });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to create element", error: err });
+    if (createdProduct) {
+      res.status(201).json({
+        message: "Product created successfully",
+        data: createdProduct,
+      });
+    } else {
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 

@@ -3,22 +3,10 @@ const path = require("path");
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
-const uploadDir = path.join(__dirname, "../../uploads");
-
-const ensureUploadDirExists = async () => {
-  try {
-    await fs.access(uploadDir);
-  } catch (error) {
-    await fs.mkdir(uploadDir);
-  }
-};
-
 const saveImage = async (image) => {
-  await ensureUploadDirExists();
-
   const extension = path.extname(image.name);
   const imageName = uid.rnd() + extension;
-  const uploadPath = path.join(uploadDir, imageName);
+  const uploadPath = path.join(__dirname, "../../uploads", imageName);
 
   await fs.writeFile(uploadPath, image.data);
 
@@ -26,17 +14,21 @@ const saveImage = async (image) => {
 };
 
 const saveAlbum = async (albumPhotos) => {
-  const promises = [];
-  for (const photo of albumPhotos) {
-    promises.push(saveImage(photo));
-  }
-
+  const promises = albumPhotos.map((photo) => saveImage(photo));
   const albumNames = await Promise.all(promises);
-
   return albumNames;
+};
+
+const getImgPath = (imageName) => {
+  if (imageName) {
+    return path.join(__dirname, "../../uploads", imageName);
+  } else {
+    return null;
+  }
 };
 
 module.exports = {
   saveImage,
   saveAlbum,
+  getImgPath,
 };
