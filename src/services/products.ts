@@ -1,22 +1,18 @@
-const products = require("../../database/elements");
-const fs = require("fs/promises");
-const path = require("path");
-const { comments } = require("../../database/comments");
-const {
-  saveImage,
-  saveAlbum,
-  getImgPath,
-} = require("../services/uploadService");
+import { products } from "../database/elements";
+import fs from "fs/promises";
+import path from "path";
+import { comments } from "../database/comments";
+import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
 const productService = {
-  getProducts: ({ title, sortByPrice, page = 1, limit = 10 }) => {
-    const filteredProducts = products.filter((product) =>
+  getProducts: ({ title, sortByPrice, page = 1, limit = 10 }: any) => {
+    const filteredProducts: any = products.filter((product: { title: string; }) =>
       product.title.toLowerCase().includes(title.toLowerCase())
     );
     if (filteredProducts) {
-      filteredProducts.sort((a, b) => {
+      filteredProducts.sort((a: { price: number; }, b: { price: number; }) => {
         if (sortByPrice === "asc") {
           return a.price - b.price;
         } else if (sortByPrice === "desc") {
@@ -40,8 +36,8 @@ const productService = {
     }
   },
 
-  createProduct: async (title, amount, price, favorite, image, albumPhotos) => {
-    const newProduct = {
+  createProduct: async (title: any, amount: any, price: any, favorite: any, image: any, albumPhotos: any[]) => {
+    const newProduct: any = {
       id: uid.rnd(),
       title,
       amount,
@@ -61,8 +57,8 @@ const productService = {
     return newProduct;
   },
 
-  editTitle: (productId, updatedData) => {
-    const index = products.findIndex((product) => product.id === productId);
+  editTitle: (productId: any, updatedData: any) => {
+    const index = products.findIndex((product: { id: any; }) => product.id === productId);
     if (index !== -1) {
       products[index] = {
         ...products[index],
@@ -72,8 +68,8 @@ const productService = {
     }
   },
 
-  deleteProduct: async (productId) => {
-    const index = products.findIndex((product) => product.id === productId);
+  deleteProduct: async (productId: any) => {
+    const index = products.findIndex((product: { id: any; }) => product.id === productId);
     if (index !== -1) {
       const deletedProduct = products.splice(index, 1)[0];
 
@@ -86,7 +82,7 @@ const productService = {
           deletedProduct.albumPhotos.length > 0
         ) {
           const deletePromises = deletedProduct.albumPhotos.map(
-            async (photo) => {
+            async (photo: any) => {
               const photoPath = getImgPath(photo);
               return fs.unlink(photoPath);
             }
@@ -102,11 +98,11 @@ const productService = {
     }
   },
 
-  getElementById: (productId) => {
-    const product = products.find((product) => product.id === productId);
+  getElementById: (productId: any) => {
+    const product = products.find((product: { id: any; }) => product.id === productId);
     if (product) {
       const productComments = comments.filter(
-        (comment) => comment.productId === productId
+        (comment: { productId: any; }) => comment.productId === productId
       );
       return {
         ...product,
@@ -118,4 +114,5 @@ const productService = {
   },
 };
 
-module.exports = { productService };
+
+export { productService }

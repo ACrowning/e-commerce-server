@@ -1,9 +1,9 @@
-const products = require("./elements");
-const ShortUniqueId = require("short-unique-id");
+import { products } from "./elements";
+import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length: 10 });
 
-const comments = [
+const comments: any[] = [
   {
     id: uid.rnd(),
     productId: products[0].id,
@@ -160,4 +160,4 @@ const comments = [
   },
 ];
 
-module.exports = { comments };
+export { comments };

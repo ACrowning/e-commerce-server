@@ -1,8 +1,8 @@
-const { comments } = require("../../database/comments");
-const ShortUniqueId = require("short-unique-id");
+import { comments } from "../database/comments";
+import ShortUniqueId from "short-unique-id";
 const uid = new ShortUniqueId({ length: 10 });
 
-const addNestedComment = (commentList, newComment, parentCommentId) => {
+const addNestedComment = (commentList: any, newComment: any, parentCommentId: any) => {
   for (let comment of commentList) {
     if (comment.id === parentCommentId) {
       comment.comments.push(newComment);
@@ -13,7 +13,7 @@ const addNestedComment = (commentList, newComment, parentCommentId) => {
   }
 };
 
-const findAndRemoveComment = (commentList, commentId) => {
+const findAndRemoveComment = (commentList: any, commentId: any) => {
   for (let i = 0; i < commentList.length; i++) {
     if (commentList[i].id === commentId) {
       commentList.splice(i, 1);
@@ -25,7 +25,7 @@ const findAndRemoveComment = (commentList, commentId) => {
   }
 };
 
-const findAndUpdateComment = (commentList, commentId, newText) => {
+const findAndUpdateComment = (commentList: any, commentId: any, newText: any) => {
   for (let i = 0; i < commentList.length; i++) {
     if (commentList[i].id === commentId) {
       commentList[i].text = newText;
@@ -42,11 +42,11 @@ const commentsService = {
     return comments;
   },
 
-  getCommentsByProductId: (productId) => {
-    return comments.filter((comment) => comment.productId === productId);
+  getCommentsByProductId: (productId: any) => {
+    return comments.filter((comment: any) => comment.productId === productId);
   },
 
-  addComment: (productId, text, parentCommentId = null) => {
+  addComment: (productId: any, text: any, parentCommentId = null) => {
     const newComment = {
       id: uid.rnd(),
       productId,
@@ -64,15 +64,15 @@ const commentsService = {
     return newComment;
   },
 
-  removeComment: (commentId) => {
+  removeComment: (commentId: any) => {
     findAndRemoveComment(comments, commentId);
     return comments;
   },
 
-  editComment: (commentId, newText) => {
+  editComment: (commentId: any, newText: any) => {
     findAndUpdateComment(comments, commentId, newText);
     return comments;
   },
 };
 
-module.exports = { commentsService };
+export { commentsService }

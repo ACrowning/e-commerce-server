@@ -1,15 +1,16 @@
-const express = require("express");
-const Router = express.Router();
-const { cartService } = require("../services/cart");
+import express from "express";
+import { cartService } from "../services/cart";
 
-Router.get("/", (req, res) => {
+const Router = express.Router();
+
+Router.get("/", (req: any, res: any) => {
   const cartItems = cartService.getCart();
   res.send({ data: cartItems });
 });
 
-Router.post("/", (req, res) => {
+Router.post("/", (req: any, res: any) => {
   const newItem = req.body;
-  const result = cartService.addItemToCart(newItem);
+  const result: any = cartService.addItemToCart(newItem);
   if (result.success) {
     res.status(201).json({
       message: "Item added to cart successfully",
@@ -23,10 +24,10 @@ Router.post("/", (req, res) => {
   }
 });
 
-Router.put("/:id", (req, res) => {
+Router.put("/:id", (req: any, res: any) => {
   const productId = req.params.id;
   const updatedItemData = req.body;
-  const result = cartService.updateProductAmount(productId, updatedItemData);
+  const result: any = cartService.updateProductAmount(productId, updatedItemData);
   if (result.success) {
     res
       .status(200)
@@ -36,9 +37,9 @@ Router.put("/:id", (req, res) => {
   }
 });
 
-Router.delete("/:id", (req, res) => {
+Router.delete("/:id", (req: any, res: any) => {
   const productId = req.params.id;
-  const result = cartService.deleteCartItem(productId);
+  const result: any = cartService.deleteCartItem(productId);
   if (result.success) {
     res
       .status(200)
@@ -48,4 +49,4 @@ Router.delete("/:id", (req, res) => {
   }
 });
 
-module.exports = Router;
+export default Router;

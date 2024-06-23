@@ -1,13 +1,14 @@
-const express = require("express");
-const Router = express.Router();
-const { commentsService } = require("../services/comments");
+import express from "express";
+import { commentsService } from "../services/comments";
 
-Router.get("/", (req, res) => {
+const Router = express.Router();
+
+Router.get("/", (req: any, res: any) => {
   const allComments = commentsService.getComments();
   res.send({ data: allComments });
 });
 
-Router.post("/comment", (req, res) => {
+Router.post("/comment", (req: any, res: any) => {
   const { productId, text, parentCommentId } = req.body;
   const newComment = commentsService.addComment(
     productId,
@@ -21,7 +22,7 @@ Router.post("/comment", (req, res) => {
   }
 });
 
-Router.delete("/:id", (req, res) => {
+Router.delete("/:id", (req: any, res: any) => {
   const commentId = req.params.id;
   const deletedComment = commentsService.removeComment(commentId);
   if (deletedComment) {
@@ -33,7 +34,7 @@ Router.delete("/:id", (req, res) => {
   }
 });
 
-Router.put("/:id", (req, res) => {
+Router.put("/:id", (req: any, res: any) => {
   const commentId = req.params.id;
   const { text } = req.body;
   const changeComment = commentsService.editComment(commentId, text);
@@ -46,4 +47,4 @@ Router.put("/:id", (req, res) => {
   }
 });
 
-module.exports = Router;
+export default Router
