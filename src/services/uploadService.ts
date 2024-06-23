@@ -1,9 +1,9 @@
-const fs = require("fs").promises;
-const path = require("path");
-const ShortUniqueId = require("short-unique-id");
+import fs from "fs/promises"
+import path from "path";
+import ShortUniqueId from "short-unique-id";
 const uid = new ShortUniqueId({ length: 10 });
 
-const saveImage = async (image) => {
+const saveImage = async (image: { name: any; data: any; }) => {
   const extension = path.extname(image.name);
   const imageName = uid.rnd() + extension;
   const uploadPath = path.join(__dirname, "../../uploads", imageName);
@@ -13,13 +13,13 @@ const saveImage = async (image) => {
   return imageName;
 };
 
-const saveAlbum = async (albumPhotos) => {
-  const promises = albumPhotos.map((photo) => saveImage(photo));
+const saveAlbum = async (albumPhotos: any[]) => {
+  const promises = albumPhotos.map((photo: any) => saveImage(photo));
   const albumNames = await Promise.all(promises);
   return albumNames;
 };
 
-const getImgPath = (imageName) => {
+const getImgPath = (imageName: any): any => {
   if (imageName) {
     return path.join(__dirname, "../../uploads", imageName);
   } else {
@@ -27,8 +27,8 @@ const getImgPath = (imageName) => {
   }
 };
 
-module.exports = {
+export {
   saveImage,
   saveAlbum,
   getImgPath,
-};
+}

@@ -16,4 +16,5 @@ const products = Array(20)
     };
   });
 
-module.exports = products;
+
+export { products }

@@ -1,14 +1,14 @@
-const products = require("../../database/elements");
-const { cartItems } = require("../../database/cartItems");
+import { products } from "../database/elements";
+import { cartItems } from "../database/cartItems";
 
 const cartService = {
   getCart: () => {
     return cartItems;
   },
 
-  addItemToCart: (newItem) => {
+  addItemToCart: (newItem: any) => {
     const existingItemIndex = cartItems.findIndex(
-      (item) => item.id === newItem.id
+      (item: any) => item.id === newItem.id
     );
     if (existingItemIndex !== -1) {
       cartItems[existingItemIndex].amount += newItem.amount;
@@ -18,8 +18,8 @@ const cartService = {
     return { success: true, cartItems: cartItems };
   },
 
-  updateProductAmount: (productId, updatedItemData) => {
-    const index = cartItems.findIndex((item) => item.id === productId);
+  updateProductAmount: (productId: any, updatedItemData: any) => {
+    const index = cartItems.findIndex((item: any) => item.id === productId);
     if (index !== -1) {
       cartItems[index] = {
         ...cartItems[index],
@@ -29,11 +29,11 @@ const cartService = {
     }
   },
 
-  deleteCartItem: (productId) => {
-    const indexCart = cartItems.findIndex((item) => item.id === productId);
+  deleteCartItem: (productId: any) => {
+    const indexCart: any = cartItems.findIndex((item: any) => item.id === productId);
     if (indexCart !== -1) {
       cartItems.splice(indexCart, 1);
-      const indexElement = products.find((item) => item.id === productId);
+      const indexElement = products.find((item: any) => item.id === productId);
       if (indexElement) {
         indexElement.amount += indexCart.amount;
       }
@@ -42,4 +42,4 @@ const cartService = {
   },
 };
 
-module.exports = { cartService };
+export { cartService };

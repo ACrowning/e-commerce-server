@@ -1,11 +1,11 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 const app = express();
-const path = require("path");
+import path from "path";
 
-const ProductRoutes = require("./src/controllers/products.js");
-const CartRoutes = require("./src/controllers/cart.js");
-const CommentsRoutes = require("./src/controllers/comments.js");
+import ProductRoutes from "./controllers/products";
+import CartRoutes from "./controllers/cart";
+import CommentsRoutes from "./controllers/comments";
 
 const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
@@ -18,8 +18,8 @@ app.use("/cart", CartRoutes);
 app.use("/comments", CommentsRoutes);
 app.use("/static", express.static(path.join("uploads")));
 
-app.get("/", (req, res) => {
-  res.send({ data: "The server works successfully!" });
+app.get("/", (req: any, res: any) => {
+  res.send({ data: "The server works successfully!!!!" });
 });
 
 app.listen(PORT, readyMessage);

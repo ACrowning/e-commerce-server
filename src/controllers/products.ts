@@ -1,9 +1,10 @@
-const express = require("express");
-const Router = express.Router();
-const fileUpload = require("express-fileupload");
-const { productService } = require("../services/products");
+import express from "express";
+import fileUpload from "express-fileupload";
+import { productService } from "../services/products";
 
-Router.post("/", (req, res) => {
+const Router = express.Router();
+
+Router.post("/", (req: any, res: any) => {
   const { title, sortByPrice, page, limit } = req.body;
 
   const filteredProducts = productService.getProducts({
@@ -22,7 +23,7 @@ Router.post("/", (req, res) => {
 
 Router.use(fileUpload());
 
-Router.post("/create", async (req, res) => {
+Router.post("/create", async (req: any, res: any) => {
   try {
     const { title, amount, price, favorite } = req.body;
     const image = req.files?.image || null;
@@ -49,7 +50,7 @@ Router.post("/create", async (req, res) => {
     } else {
       res.status(500).json({ message: "Failed to create product" });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
@@ -89,4 +90,4 @@ Router.get("/:id", (req, res) => {
   }
 });
 
-module.exports = Router;
+export default Router
