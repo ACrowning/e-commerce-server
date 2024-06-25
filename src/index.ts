@@ -6,7 +6,7 @@ import path from "path";
 import ProductRoutes from "./controllers/products";
 import CartRoutes from "./controllers/cart";
 import CommentsRoutes from "./controllers/comments";
-import UsersRoutes from "./controllers/users";
+import UsersRoutes from "./controllers/auth";
 
 const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
