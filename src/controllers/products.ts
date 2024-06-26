@@ -1,6 +1,7 @@
 import express from "express";
 import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
+import requireLogin from "../middlewares/requireLogin";
 
 const Router = express.Router();
 
@@ -23,7 +24,7 @@ Router.post("/", (req: any, res: any) => {
 
 Router.use(fileUpload());
 
-Router.post("/create", async (req: any, res: any) => {
+Router.post("/create", requireLogin, async (req: any, res: any) => {
   try {
     const { title, amount, price, favorite } = req.body;
     const image = req.files?.image || null;
@@ -90,4 +91,4 @@ Router.get("/:id", (req, res) => {
   }
 });
 
-export default Router
+export default Router;

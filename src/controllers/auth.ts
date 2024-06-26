@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
-import { body, validationResult } from "express-validator";
+import { validationResult } from "express-validator";
 import { addUser, authenticateUser, findUserByEmail } from "../services/users";
 import { userSignupValidator, userLoginValidator } from "../validators";
+import requireLogin from "../middlewares/requireLogin";
 
 const Router = express.Router();
 
@@ -58,5 +59,17 @@ Router.post(
     res.status(200).json({ message: "Login successful", user, token });
   }
 );
+
+Router.get("/protected", requireLogin, (req: Request, res: Response) => {
+  const user = res.locals.user;
+  const iatReadable = new Date(user.iat * 1000).toUTCString();
+  res
+    .status(200)
+    .json({
+      message: "You have access to this protected route",
+      user,
+      iat_readable: iatReadable,
+    });
+});
 
 export default Router;
