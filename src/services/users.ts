@@ -3,7 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config";
 import { Role } from "../enums";
-const ShortUniqueId = require("short-unique-id");
+import ShortUniqueId from "short-unique-id";
+
 const uid = new ShortUniqueId({ length: 10 });
 
 export const addUser = async (
@@ -16,7 +17,7 @@ export const addUser = async (
     id: uid.rnd(),
     ...userRequest,
     password: hashedPassword,
-    role: Role[userRequest.role as keyof typeof Role],
+    role: userRequest.role,
   };
 
   users.push(newUser);

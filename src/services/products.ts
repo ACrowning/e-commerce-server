@@ -1,18 +1,18 @@
 import { products } from "../database/elements";
 import fs from "fs/promises";
-import path from "path";
 import { comments } from "../database/comments";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
-const ShortUniqueId = require("short-unique-id");
+import ShortUniqueId from "short-unique-id";
 const uid = new ShortUniqueId({ length: 10 });
 
 const productService = {
   getProducts: ({ title, sortByPrice, page = 1, limit = 10 }: any) => {
-    const filteredProducts: any = products.filter((product: { title: string; }) =>
-      product.title.toLowerCase().includes(title.toLowerCase())
+    const filteredProducts: any = products.filter(
+      (product: { title: string }) =>
+        product.title.toLowerCase().includes(title.toLowerCase())
     );
     if (filteredProducts) {
-      filteredProducts.sort((a: { price: number; }, b: { price: number; }) => {
+      filteredProducts.sort((a: { price: number }, b: { price: number }) => {
         if (sortByPrice === "asc") {
           return a.price - b.price;
         } else if (sortByPrice === "desc") {
@@ -36,7 +36,14 @@ const productService = {
     }
   },
 
-  createProduct: async (title: any, amount: any, price: any, favorite: any, image: any, albumPhotos: any[]) => {
+  createProduct: async (
+    title: any,
+    amount: any,
+    price: any,
+    favorite: any,
+    image: any,
+    albumPhotos: any[]
+  ) => {
     const newProduct: any = {
       id: uid.rnd(),
       title,
@@ -58,7 +65,9 @@ const productService = {
   },
 
   editTitle: (productId: any, updatedData: any) => {
-    const index = products.findIndex((product: { id: any; }) => product.id === productId);
+    const index = products.findIndex(
+      (product: { id: any }) => product.id === productId
+    );
     if (index !== -1) {
       products[index] = {
         ...products[index],
@@ -69,7 +78,9 @@ const productService = {
   },
 
   deleteProduct: async (productId: any) => {
-    const index = products.findIndex((product: { id: any; }) => product.id === productId);
+    const index = products.findIndex(
+      (product: { id: any }) => product.id === productId
+    );
     if (index !== -1) {
       const deletedProduct = products.splice(index, 1)[0];
 
@@ -99,10 +110,12 @@ const productService = {
   },
 
   getElementById: (productId: any) => {
-    const product = products.find((product: { id: any; }) => product.id === productId);
+    const product = products.find(
+      (product: { id: any }) => product.id === productId
+    );
     if (product) {
       const productComments = comments.filter(
-        (comment: { productId: any; }) => comment.productId === productId
+        (comment: { productId: any }) => comment.productId === productId
       );
       return {
         ...product,
@@ -114,5 +127,4 @@ const productService = {
   },
 };
 
-
-export { productService }
+export { productService };
