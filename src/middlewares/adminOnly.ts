@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { SECRET_KEY } from "../config";
 import { findUserById } from "../services/users";
+import { Role } from "../enums";
 
-interface JwtPayload {
-  id: string;
-}
-
-const requireLogin = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header("Authorization")?.split(" ")[1];
+const adminOnly = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     res.status(401).json({ message: "Access Denied: No token provided" });
@@ -19,10 +20,15 @@ const requireLogin = (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
     const userId = decodedToken.id;
 
-    const user = findUserById(userId);
+    const user = await findUserById(userId);
 
     if (!user) {
       res.status(401).json({ message: "Access Denied: User not found" });
+      return;
+    }
+
+    if (user.role !== Role.ADMIN) {
+      res.status(403).json({ message: "Access Denied: Admins only" });
       return;
     }
 
@@ -33,4 +39,4 @@ const requireLogin = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { requireLogin };
+export { adminOnly };

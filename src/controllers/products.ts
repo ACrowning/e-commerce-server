@@ -1,7 +1,8 @@
 import express from "express";
 import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
-import requireLogin from "../middlewares/requireLogin";
+// import { requireLogin } from "../middlewares/requireLogin";
+import { adminOnly } from "../middlewares/adminOnly";
 
 const Router = express.Router();
 
@@ -24,7 +25,7 @@ Router.post("/", (req: any, res: any) => {
 
 Router.use(fileUpload());
 
-Router.post("/create", requireLogin, async (req: any, res: any) => {
+Router.post("/create", adminOnly, async (req: any, res: any) => {
   try {
     const { title, amount, price, favorite } = req.body;
     const image = req.files?.image || null;

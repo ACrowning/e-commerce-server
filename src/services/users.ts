@@ -1,21 +1,22 @@
-import { User, users } from "../database/users";
+import { User, users, UserRequest, UserResponse } from "../database/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config";
+import { Role } from "../enums";
 const ShortUniqueId = require("short-unique-id");
 const uid = new ShortUniqueId({ length: 10 });
 
 export const addUser = async (
-  user: User
-): Promise<{ user: User; token: string }> => {
-  const { id, ...rest } = user;
+  userRequest: UserRequest
+): Promise<UserResponse> => {
   const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(rest.password, salt);
+  const hashedPassword = await bcrypt.hash(userRequest.password, salt);
 
   const newUser: User = {
     id: uid.rnd(),
-    ...rest,
+    ...userRequest,
     password: hashedPassword,
+    role: Role[userRequest.role as keyof typeof Role],
   };
 
   users.push(newUser);
@@ -25,8 +26,21 @@ export const addUser = async (
   return { user: newUser, token };
 };
 
-export const findUserByEmail = (email: string): User | undefined => {
-  return users.find((user) => user.email === email);
+export const findUserByEmail = (email: string): User | null => {
+  if (!email) {
+    return null;
+  }
+
+  const user = users.find((user) => user.email === email);
+  return user || null;
+};
+
+export const findUserById = (id: string): User | null => {
+  if (!id) {
+    return null;
+  }
+  const user = users.find((user) => user.id === id);
+  return user || null;
 };
 
 export const authenticateUser = async (
