@@ -1,6 +1,8 @@
 import express from "express";
 import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
+import { requireLogin } from "../middlewares/requireLogin";
+import { adminOnly } from "../middlewares/adminOnly";
 
 const Router = express.Router();
 
@@ -23,7 +25,7 @@ Router.post("/", (req: any, res: any) => {
 
 Router.use(fileUpload());
 
-Router.post("/create", async (req: any, res: any) => {
+Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
   try {
     const { title, amount, price, favorite } = req.body;
     const image = req.files?.image || null;
@@ -55,7 +57,7 @@ Router.post("/create", async (req: any, res: any) => {
   }
 });
 
-Router.put("/:id", (req, res) => {
+Router.put("/:id", requireLogin, adminOnly, (req, res) => {
   const productId = req.params.id;
   const changeTitle = productService.editTitle(productId, req.body);
   if (changeTitle) {
@@ -67,7 +69,7 @@ Router.put("/:id", (req, res) => {
   }
 });
 
-Router.delete("/:id", (req, res) => {
+Router.delete("/:id", requireLogin, adminOnly, (req, res) => {
   const productId = req.params.id;
   const deletedProduct = productService.deleteProduct(productId);
   if (deletedProduct) {
@@ -90,4 +92,4 @@ Router.get("/:id", (req, res) => {
   }
 });
 
-export default Router
+export default Router;

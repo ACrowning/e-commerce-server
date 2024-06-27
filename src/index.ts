@@ -6,6 +6,7 @@ import path from "path";
 import ProductRoutes from "./controllers/products";
 import CartRoutes from "./controllers/cart";
 import CommentsRoutes from "./controllers/comments";
+import UsersRoutes from "./controllers/auth";
 
 const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
@@ -17,6 +18,7 @@ app.use("/products", ProductRoutes);
 app.use("/cart", CartRoutes);
 app.use("/comments", CommentsRoutes);
 app.use("/static", express.static(path.join("uploads")));
+app.use("/auth", UsersRoutes);
 
 app.get("/", (req: any, res: any) => {
   res.send({ data: "The server works successfully!!!!" });
