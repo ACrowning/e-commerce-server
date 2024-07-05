@@ -3,22 +3,41 @@ import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length: 10 });
 
-const comments: any[] = [
+export interface User {
+  name: string;
+  id: string;
+}
+
+export interface Comment {
+  id: string;
+  productId: string;
+  text: string;
+  date: Date;
+  user: User;
+  comments: Comment[];
+}
+
+const comments: Comment[] = [
   {
     id: uid.rnd(),
     productId: products[0].id,
     text: "string",
     date: new Date(),
+    user: { name: "User1", id: "user1" },
     comments: [
       {
         id: uid.rnd(),
+        productId: products[0].id,
         text: "string2",
         date: new Date(),
+        user: { name: "User2", id: "user2" },
         comments: [
           {
             id: uid.rnd(),
+            productId: products[0].id,
             text: "string1",
             date: new Date(),
+            user: { name: "User3", id: "user3" },
             comments: [],
           },
         ],
@@ -30,130 +49,14 @@ const comments: any[] = [
     productId: products[1].id,
     text: "string2",
     date: new Date(),
+    user: { name: "User4", id: "user4" },
     comments: [
       {
         id: uid.rnd(),
+        productId: products[1].id,
         text: "string1",
         date: new Date(),
-        comments: [],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[2].id,
-    text: "string1",
-    date: new Date(),
-    comments: [],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[3].id,
-    text: "string",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string2",
-        date: new Date(),
-        comments: [
-          {
-            id: uid.rnd(),
-            text: "string1",
-            date: new Date(),
-            comments: [],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[4].id,
-    text: "string2",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string1",
-        date: new Date(),
-        comments: [],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[5].id,
-    text: "string",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string2",
-        date: new Date(),
-        comments: [
-          {
-            id: uid.rnd(),
-            text: "string1",
-            date: new Date(),
-            comments: [],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[6].id,
-    text: "string2",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string1",
-        date: new Date(),
-        comments: [],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[7].id,
-    text: "string1",
-    date: new Date(),
-    comments: [],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[8].id,
-    text: "string",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string2",
-        date: new Date(),
-        comments: [
-          {
-            id: uid.rnd(),
-            text: "string1",
-            date: new Date(),
-            comments: [],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: uid.rnd(),
-    productId: products[9].id,
-    text: "string2",
-    date: new Date(),
-    comments: [
-      {
-        id: uid.rnd(),
-        text: "string1",
-        date: new Date(),
+        user: { name: "User5", id: "user5" },
         comments: [],
       },
     ],
