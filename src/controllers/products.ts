@@ -57,7 +57,12 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
   }
 });
 
-Router.put("/:id", requireLogin, adminOnly, (req, res) => {
+Router.get("/all", requireLogin, adminOnly, (req: any, res: any) => {
+  const products = productService.getAllProducts();
+  res.status(200).json(products);
+});
+
+Router.put("/:id", requireLogin, (req, res) => {
   const productId = req.params.id;
   const changeTitle = productService.editTitle(productId, req.body);
   if (changeTitle) {
@@ -69,7 +74,7 @@ Router.put("/:id", requireLogin, adminOnly, (req, res) => {
   }
 });
 
-Router.delete("/:id", requireLogin, adminOnly, (req, res) => {
+Router.delete("/:id", requireLogin, (req, res) => {
   const productId = req.params.id;
   const deletedProduct = productService.deleteProduct(productId);
   if (deletedProduct) {

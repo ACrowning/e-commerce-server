@@ -1,4 +1,4 @@
-import { products } from "../database/elements";
+import { Product, products } from "../database/elements";
 import fs from "fs/promises";
 import { comments } from "../database/comments";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
@@ -34,6 +34,10 @@ const productService = {
         total: 0,
       };
     }
+  },
+
+  getAllProducts: (): Product[] => {
+    return products;
   },
 
   createProduct: async (
