@@ -9,17 +9,16 @@ const Router = express.Router();
 Router.post("/", (req: any, res: any) => {
   const { title, sortByPrice, page, limit } = req.body;
 
-  const filteredProducts = productService.getProducts({
-    title,
-    sortByPrice,
-    page,
-    limit,
-  });
-
-  if (filteredProducts) {
-    res.status(200).json({ data: filteredProducts });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  try {
+    const result = productService.getProducts({
+      title,
+      sortByPrice,
+      page,
+      limit,
+    });
+    res.status(200).json({ data: result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products" });
   }
 });
 

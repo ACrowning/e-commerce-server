@@ -5,21 +5,46 @@ import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
 const uid = new ShortUniqueId({ length: 10 });
 
+interface GetProductsParams {
+  title?: string;
+  sortByPrice?: "asc" | "desc";
+  page?: number;
+  limit?: number | "*";
+}
+
 const productService = {
-  getProducts: ({ title, sortByPrice, page = 1, limit = 10 }: any) => {
-    const filteredProducts: any = products.filter(
-      (product: { title: string }) =>
+  getProducts: ({
+    title,
+    sortByPrice,
+    page = 1,
+    limit = 10,
+  }: GetProductsParams) => {
+    let filteredProducts = products;
+
+    if (title) {
+      filteredProducts = filteredProducts.filter((product) =>
         product.title.toLowerCase().includes(title.toLowerCase())
-    );
-    if (filteredProducts) {
-      filteredProducts.sort((a: { price: number }, b: { price: number }) => {
+      );
+    }
+
+    if (sortByPrice) {
+      filteredProducts.sort((a, b) => {
         if (sortByPrice === "asc") {
           return a.price - b.price;
         } else if (sortByPrice === "desc") {
           return b.price - a.price;
+        } else {
+          return 0;
         }
       });
+    }
 
+    if (limit === "*") {
+      return {
+        currentPage: filteredProducts,
+        total: 1,
+      };
+    } else {
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const currentPage = filteredProducts.slice(startIndex, endIndex);
@@ -27,11 +52,6 @@ const productService = {
       return {
         currentPage,
         total: Math.ceil(filteredProducts.length / limit),
-      };
-    } else {
-      return {
-        currentPage: [],
-        total: 0,
       };
     }
   },
