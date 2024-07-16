@@ -56,10 +56,6 @@ const productService = {
     }
   },
 
-  getAllProducts: (): Product[] => {
-    return products;
-  },
-
   createProduct: async (
     title: any,
     amount: any,
