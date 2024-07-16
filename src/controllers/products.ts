@@ -9,17 +9,16 @@ const Router = express.Router();
 Router.post("/", (req: any, res: any) => {
   const { title, sortByPrice, page, limit } = req.body;
 
-  const filteredProducts = productService.getProducts({
-    title,
-    sortByPrice,
-    page,
-    limit,
-  });
-
-  if (filteredProducts) {
-    res.status(200).json({ data: filteredProducts });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  try {
+    const result = productService.getProducts({
+      title,
+      sortByPrice,
+      page,
+      limit,
+    });
+    res.status(200).json({ data: result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products" });
   }
 });
 
@@ -57,7 +56,7 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
   }
 });
 
-Router.put("/:id", requireLogin, adminOnly, (req, res) => {
+Router.put("/:id", requireLogin, (req, res) => {
   const productId = req.params.id;
   const changeTitle = productService.editTitle(productId, req.body);
   if (changeTitle) {
@@ -69,7 +68,7 @@ Router.put("/:id", requireLogin, adminOnly, (req, res) => {
   }
 });
 
-Router.delete("/:id", requireLogin, adminOnly, (req, res) => {
+Router.delete("/:id", requireLogin, (req, res) => {
   const productId = req.params.id;
   const deletedProduct = productService.deleteProduct(productId);
   if (deletedProduct) {

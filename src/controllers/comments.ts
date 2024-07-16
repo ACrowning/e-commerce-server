@@ -9,10 +9,11 @@ Router.get("/", (req: any, res: any) => {
 });
 
 Router.post("/comment", (req: any, res: any) => {
-  const { productId, text, parentCommentId } = req.body;
+  const { productId, text, user, parentCommentId } = req.body;
   const newComment = commentsService.addComment(
     productId,
     text,
+    user,
     parentCommentId
   );
   if (newComment) {
@@ -47,4 +48,4 @@ Router.put("/:id", (req: any, res: any) => {
   }
 });
 
-export default Router
+export default Router;

@@ -1,11 +1,17 @@
 import { comments } from "../database/comments";
 import ShortUniqueId from "short-unique-id";
+import { User, Comment } from "../database/comments";
 const uid = new ShortUniqueId({ length: 10 });
 
-const addNestedComment = (commentList: any, newComment: any, parentCommentId: any) => {
+const addNestedComment = (
+  commentList: Comment[],
+  newComment: Comment,
+  parentCommentId: string
+) => {
   for (let comment of commentList) {
     if (comment.id === parentCommentId) {
       comment.comments.push(newComment);
+      return;
     }
     if (comment.comments.length > 0) {
       addNestedComment(comment.comments, newComment, parentCommentId);
@@ -13,11 +19,11 @@ const addNestedComment = (commentList: any, newComment: any, parentCommentId: an
   }
 };
 
-const findAndRemoveComment = (commentList: any, commentId: any) => {
+const findAndRemoveComment = (commentList: Comment[], commentId: string) => {
   for (let i = 0; i < commentList.length; i++) {
     if (commentList[i].id === commentId) {
       commentList.splice(i, 1);
-      break;
+      return;
     }
     if (commentList[i].comments.length > 0) {
       findAndRemoveComment(commentList[i].comments, commentId);
@@ -25,7 +31,11 @@ const findAndRemoveComment = (commentList: any, commentId: any) => {
   }
 };
 
-const findAndUpdateComment = (commentList: any, commentId: any, newText: any) => {
+const findAndUpdateComment = (
+  commentList: Comment[],
+  commentId: string,
+  newText: string
+) => {
   for (let i = 0; i < commentList.length; i++) {
     if (commentList[i].id === commentId) {
       commentList[i].text = newText;
@@ -42,16 +52,22 @@ const commentsService = {
     return comments;
   },
 
-  getCommentsByProductId: (productId: any) => {
-    return comments.filter((comment: any) => comment.productId === productId);
+  getCommentsByProductId: (productId: string) => {
+    return comments.filter((comment) => comment.productId === productId);
   },
 
-  addComment: (productId: any, text: any, parentCommentId = null) => {
-    const newComment = {
+  addComment: (
+    productId: string,
+    text: string,
+    user: User,
+    parentCommentId: string | null = null
+  ) => {
+    const newComment: Comment = {
       id: uid.rnd(),
       productId,
       text,
       date: new Date(),
+      user,
       comments: [],
     };
 
@@ -64,15 +80,15 @@ const commentsService = {
     return newComment;
   },
 
-  removeComment: (commentId: any) => {
+  removeComment: (commentId: string) => {
     findAndRemoveComment(comments, commentId);
     return comments;
   },
 
-  editComment: (commentId: any, newText: any) => {
+  editComment: (commentId: string, newText: string) => {
     findAndUpdateComment(comments, commentId, newText);
     return comments;
   },
 };
 
-export { commentsService }
+export { commentsService };
