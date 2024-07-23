@@ -13,28 +13,30 @@ const PORT = process.env.PORT || 4000;
 const readyMessage = () => console.log("Server on http://localhost:" + PORT);
 
 async function initApp() {
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cors({ origin: "*" }));
-  app.use("/products", ProductRoutes);
-  app.use("/cart", CartRoutes);
-  app.use("/comments", CommentsRoutes);
-  app.use("/static", express.static(path.join("uploads")));
-  app.use("/auth", UsersRoutes);
+  try {
+    await initDatabaseStructure(
+      path.join(__dirname, "database", "queries", "init.sql")
+    );
 
-  app.get("/health", checkHealth);
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(cors({ origin: "*" }));
+    app.use("/products", ProductRoutes);
+    app.use("/cart", CartRoutes);
+    app.use("/comments", CommentsRoutes);
+    app.use("/static", express.static(path.join("uploads")));
+    app.use("/auth", UsersRoutes);
 
-  app.listen(PORT, readyMessage);
+    app.get("/health", checkHealth);
 
-  app.listen(80, function () {
-    console.log("CORS-enabled web server listening on port 80");
-  });
+    app.listen(PORT, readyMessage);
+
+    app.listen(80, function () {
+      console.log("CORS-enabled web server listening on port 80");
+    });
+  } catch (error) {
+    console.error("Error initializing database:", error);
+  }
 }
 
-initDatabaseStructure(path.join(__dirname, "database", "queries", "init.sql"))
-  .then(() => {
-    initApp();
-  })
-  .catch((error) => {
-    console.error("Error initializing database:", error);
-  });
+initApp();

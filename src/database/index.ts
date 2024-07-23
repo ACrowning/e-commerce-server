@@ -25,6 +25,6 @@ export async function initDatabaseStructure(
   }
 }
 
-const sqlFilePath = path.join(__dirname, "init.sql");
+const sqlFilePath = path.join(__dirname, "database", "queries", "init.sql");
 
 initDatabaseStructure(sqlFilePath);
