@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS products (
     price NUMERIC(10, 2) NOT NULL,
     favorite BOOLEAN NOT NULL,
     image TEXT,
-    album_photos TEXT[]
+   album_photos JSONB
 );
