@@ -11,13 +11,25 @@ export async function createProduct(product: Product): Promise<Product> {
     RETURNING *;
   `;
 
-  const values = [id, title, amount, price, favorite, image, albumPhotos];
+  const values = [
+    id,
+    title,
+    amount,
+    price,
+    favorite,
+    image,
+    JSON.stringify(albumPhotos),
+  ];
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
     return result.rows[0];
   } catch (error) {
-    throw console.error(`Error creating product`);
+    if (error instanceof Error) {
+      throw new Error(`Error creating product: ${error.message}`);
+    } else {
+      throw new Error("Unknown error creating product");
+    }
   }
 }
 
@@ -48,7 +60,11 @@ export async function getProducts(
     const result: QueryResult<Product> = await pool.query(query, values);
     return result.rows;
   } catch (error) {
-    throw console.error(`Error getting products`);
+    if (error instanceof Error) {
+      throw new Error(`Error creating product: ${error.message}`);
+    } else {
+      throw new Error("Unknown error creating product");
+    }
   }
 }
 
@@ -65,7 +81,11 @@ export async function deleteProduct(
     const result: QueryResult<Product> = await pool.query(query, [productId]);
     return result.rows[0] || null;
   } catch (error) {
-    throw console.error(`Error deleting product`);
+    if (error instanceof Error) {
+      throw new Error(`Error deleting product: ${error.message}`);
+    } else {
+      throw new Error("Unknown error deleting product");
+    }
   }
 }
 
@@ -101,7 +121,11 @@ export async function updateProduct(
     const result: QueryResult<Product> = await pool.query(query, values);
     return result.rows[0] || null;
   } catch (error) {
-    throw console.error(`Error updating product`);
+    if (error instanceof Error) {
+      throw new Error(`Error updating product: ${error.message}`);
+    } else {
+      throw new Error("Unknown error updating product");
+    }
   }
 }
 
