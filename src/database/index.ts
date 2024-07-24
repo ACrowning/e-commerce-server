@@ -1,5 +1,4 @@
 import { promises as fs } from "fs";
-import path from "path";
 import { pool } from "../db";
 
 async function readSqlFile(filePath: string): Promise<string> {
@@ -24,7 +23,3 @@ export async function initDatabaseStructure(
     console.error("Error initializing database structure:", error);
   }
 }
-
-const sqlFilePath = path.join(__dirname, "database", "queries", "init.sql");
-
-initDatabaseStructure(sqlFilePath);
