@@ -1,7 +1,7 @@
 import { User, users, UserRequest, UserResponse } from "../database/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../config";
+import { SECRET_KEY } from "../config/config";
 import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length: 10 });

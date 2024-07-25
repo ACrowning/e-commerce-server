@@ -1,6 +1,8 @@
 import { pool } from "../../db";
 import { Product } from "../elements";
 import { QueryResult } from "pg";
+import { promises as fs } from "fs";
+import path from "path";
 
 export interface GetProductsParams {
   title?: string;
@@ -9,15 +11,24 @@ export interface GetProductsParams {
   limit?: number | "*";
 }
 
+async function readSqlFile(filePath: string): Promise<string> {
+  try {
+    return await fs.readFile(filePath, "utf8");
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error : ${error.message}`);
+    } else {
+      throw new Error("Unknown error ");
+    }
+  }
+}
+
 export async function createProduct(product: Product): Promise<Product> {
   const { id, title, amount, price, favorite, image, albumPhotos } = product;
 
-  const query = `
-    INSERT INTO products (id, title, amount, price, favorite, image, album_photos)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING *;
-  `;
-
+  const query = await readSqlFile(
+    path.join(__dirname, "../queries/create_product.sql")
+  );
   const values = [
     id,
     title,

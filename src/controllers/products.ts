@@ -12,8 +12,8 @@ Router.post("/", async (req: Request, res: Response) => {
   const { title, sortByPrice, page, limit } = req.body;
 
   const params: GetProductsParams = {
-    title: title as string,
-    sortByPrice: sortByPrice as "asc" | "desc",
+    title: title,
+    sortByPrice: sortByPrice,
     page: page ? parseInt(page, 10) : 1,
     limit: limit === "*" ? "*" : limit ? parseInt(limit, 10) : 10,
   };

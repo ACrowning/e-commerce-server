@@ -11,7 +11,7 @@ import { requireLogin } from "../middlewares/requireLogin";
 import { UserRequest } from "../database/users";
 import { adminOnly } from "../middlewares/adminOnly";
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../config";
+import { SECRET_KEY } from "../config/config";
 
 const Router = express.Router();
 
