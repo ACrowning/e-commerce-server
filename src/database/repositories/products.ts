@@ -2,6 +2,13 @@ import { pool } from "../../db";
 import { Product } from "../elements";
 import { QueryResult } from "pg";
 
+export interface GetProductsParams {
+  title?: string;
+  sortByPrice?: "asc" | "desc";
+  page?: number;
+  limit?: number | "*";
+}
+
 export async function createProduct(product: Product): Promise<Product> {
   const { id, title, amount, price, favorite, image, albumPhotos } = product;
 
@@ -61,9 +68,9 @@ export async function getProducts(
     return result.rows;
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Error creating product: ${error.message}`);
+      throw new Error(`Error getting products: ${error.message}`);
     } else {
-      throw new Error("Unknown error creating product");
+      throw new Error("Unknown error getting products");
     }
   }
 }
@@ -114,7 +121,7 @@ export async function updateProduct(
     price,
     favorite,
     image,
-    albumPhotos,
+    JSON.stringify(albumPhotos),
   ];
 
   try {
@@ -127,11 +134,4 @@ export async function updateProduct(
       throw new Error("Unknown error updating product");
     }
   }
-}
-
-interface GetProductsParams {
-  title?: string;
-  sortByPrice?: "asc" | "desc";
-  page?: number;
-  limit?: number | "*";
 }

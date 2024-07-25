@@ -1,24 +1,35 @@
 import express from "express";
+import { Request, Response } from "express";
 import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
 import { requireLogin } from "../middlewares/requireLogin";
 import { adminOnly } from "../middlewares/adminOnly";
+import { GetProductsParams } from "../database/repositories/products";
 
 const Router = express.Router();
 
-Router.post("/", (req: any, res: any) => {
+Router.post("/", async (req: Request, res: Response) => {
   const { title, sortByPrice, page, limit } = req.body;
 
+  const params: GetProductsParams = {
+    title: title as string,
+    sortByPrice: sortByPrice as "asc" | "desc",
+    page: page ? parseInt(page, 10) : 1,
+    limit: limit === "*" ? "*" : limit ? parseInt(limit, 10) : 10,
+  };
+
+  console.log("Received Params in Controller:", params);
+
   try {
-    const result = productService.getProducts({
-      title,
-      sortByPrice,
-      page,
-      limit,
-    });
+    const result = await productService.getProducts(params);
+    console.log("Products Fetched:", result);
     res.status(200).json({ data: result });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch products" });
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
   }
 });
 

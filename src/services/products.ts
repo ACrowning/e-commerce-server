@@ -19,49 +19,6 @@ interface GetProductsParams {
 }
 
 const productService = {
-  // getProducts: ({
-  //   title,
-  //   sortByPrice,
-  //   page = 1,
-  //   limit = 10,
-  // }: GetProductsParams) => {
-  //   let filteredProducts = products;
-
-  //   if (title) {
-  //     filteredProducts = filteredProducts.filter((product) =>
-  //       product.title.toLowerCase().includes(title.toLowerCase())
-  //     );
-  //   }
-
-  //   if (sortByPrice) {
-  //     filteredProducts.sort((a, b) => {
-  //       if (sortByPrice === "asc") {
-  //         return a.price - b.price;
-  //       } else if (sortByPrice === "desc") {
-  //         return b.price - a.price;
-  //       } else {
-  //         return 0;
-  //       }
-  //     });
-  //   }
-
-  //   if (limit === "*") {
-  //     return {
-  //       currentPage: filteredProducts,
-  //       total: 1,
-  //     };
-  //   } else {
-  //     const startIndex = (page - 1) * limit;
-  //     const endIndex = startIndex + limit;
-  //     const currentPage = filteredProducts.slice(startIndex, endIndex);
-
-  //     return {
-  //       currentPage,
-  //       total: Math.ceil(filteredProducts.length / limit),
-  //     };
-  //   }
-  // },
-
   getProducts: async (params: GetProductsParams) => {
     return dbGetProducts(params);
   },
