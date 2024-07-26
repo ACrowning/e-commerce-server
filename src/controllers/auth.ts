@@ -71,7 +71,7 @@ Router.get("/user", requireLogin, (req: Request, res: Response) => {
   }
 
   try {
-    const decoded = jwt.verify(token, SECRET_KEY) as { id: string };
+    const decoded = jwt.verify(token, SECRET_KEY || "") as { id: string };
     const user = findUserById(decoded.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });

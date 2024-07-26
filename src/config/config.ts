@@ -7,4 +7,4 @@ export const DB_USER = process.env.DB_USER;
 export const DB_PASSWORD = process.env.DB_PASSWORD;
 export const DB_DATABASE = process.env.DB_DATABASE;
 export const DB_PORT = parseInt(process.env.DB_PORT || "5432", 10);
-export const SECRET_KEY = "your_secret_key";
+export const SECRET_KEY = process.env.SECRET_KEY;

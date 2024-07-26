@@ -20,7 +20,9 @@ interface GetProductsParams {
 
 const productService = {
   getProducts: async (params: GetProductsParams) => {
-    return dbGetProducts(params);
+    const { data } = await dbGetProducts(params);
+
+    return data;
   },
 
   createProduct: async (
@@ -44,15 +46,19 @@ const productService = {
           : [],
     };
 
-    return dbCreateProduct(newProduct);
+    const { data } = await dbCreateProduct(newProduct);
+
+    return data;
   },
 
   editTitle: async (productId: string, updatedData: Partial<Product>) => {
-    return dbUpdateProduct(productId, updatedData);
+    const { data } = await dbUpdateProduct(productId, updatedData);
+
+    return data;
   },
 
   deleteProduct: async (productId: string) => {
-    const deletedProduct = await dbDeleteProduct(productId);
+    const { data: deletedProduct } = await dbDeleteProduct(productId);
 
     if (deletedProduct) {
       try {
@@ -83,13 +89,15 @@ const productService = {
   },
 
   getElementById: async (productId: string) => {
-    const product = await dbGetProducts({
+    const { data: products } = await dbGetProducts({
       title: "",
       sortByPrice: undefined,
       page: 1,
       limit: "*",
-    }).then((products) =>
-      products.find((product: Product) => product.id === productId)
+    });
+
+    const product = products?.find(
+      (product: Product) => product.id === productId
     );
 
     if (product) {

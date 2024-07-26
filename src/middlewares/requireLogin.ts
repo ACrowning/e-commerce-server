@@ -16,7 +16,7 @@ const requireLogin = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
+    const decodedToken = jwt.verify(token, SECRET_KEY || "") as JwtPayload;
     const userId = decodedToken.id;
 
     const user = findUserById(userId);

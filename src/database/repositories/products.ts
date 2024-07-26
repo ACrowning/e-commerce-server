@@ -15,15 +15,18 @@ async function readSqlFile(filePath: string): Promise<string> {
   try {
     return await fs.readFile(filePath, "utf8");
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error : ${error.message}`);
-    } else {
-      throw new Error("Unknown error ");
-    }
+    throw `Error reading SQL file: ${error}`;
   }
 }
 
-export async function createProduct(product: Product): Promise<Product> {
+interface RepositoryResponse<T> {
+  data: T | null;
+  error: string | null;
+}
+
+export async function createProduct(
+  product: Product
+): Promise<RepositoryResponse<Product>> {
   const { id, title, amount, price, favorite, image, albumPhotos } = product;
 
   const query = await readSqlFile(
@@ -41,19 +44,15 @@ export async function createProduct(product: Product): Promise<Product> {
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return result.rows[0];
+    return { data: result.rows[0], error: null };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error creating product: ${error.message}`);
-    } else {
-      throw new Error("Unknown error creating product");
-    }
+    return { data: null, error: `Error creating product: ${error}` };
   }
 }
 
 export async function getProducts(
   params: GetProductsParams
-): Promise<Product[]> {
+): Promise<RepositoryResponse<Product[]>> {
   const { title, sortByPrice, page = 1, limit = 10 } = params;
 
   let query = "SELECT * FROM products";
@@ -76,19 +75,15 @@ export async function getProducts(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return result.rows;
+    return { data: result.rows, error: null };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error getting products: ${error.message}`);
-    } else {
-      throw new Error("Unknown error getting products");
-    }
+    return { data: null, error: `Error fetching products: ${error}` };
   }
 }
 
 export async function deleteProduct(
   productId: string
-): Promise<Product | null> {
+): Promise<RepositoryResponse<Product | null>> {
   const query = `
     DELETE FROM products
     WHERE id = $1
@@ -97,20 +92,16 @@ export async function deleteProduct(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, [productId]);
-    return result.rows[0] || null;
+    return { data: result.rows[0] || null, error: null };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error deleting product: ${error.message}`);
-    } else {
-      throw new Error("Unknown error deleting product");
-    }
+    return { data: null, error: `Error deleting product: ${error}` };
   }
 }
 
 export async function updateProduct(
   productId: string,
   updatedData: Partial<Product>
-): Promise<Product | null> {
+): Promise<RepositoryResponse<Product | null>> {
   const { title, amount, price, favorite, image, albumPhotos } = updatedData;
 
   const query = `
@@ -132,17 +123,13 @@ export async function updateProduct(
     price,
     favorite,
     image,
-    JSON.stringify(albumPhotos),
+    albumPhotos,
   ];
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return result.rows[0] || null;
+    return { data: result.rows[0] || null, error: null };
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Error updating product: ${error.message}`);
-    } else {
-      throw new Error("Unknown error updating product");
-    }
+    return { data: null, error: `Error updating product: ${error}` };
   }
 }

@@ -18,11 +18,9 @@ Router.post("/", async (req: Request, res: Response) => {
     limit: limit === "*" ? "*" : limit ? parseInt(limit, 10) : 10,
   };
 
-  console.log("Received Params in Controller:", params);
-
   try {
     const result = await productService.getProducts(params);
-    console.log("Products Fetched:", result);
+
     res.status(200).json({ data: result });
   } catch (error) {
     if (error instanceof Error) {
