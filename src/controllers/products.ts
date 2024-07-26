@@ -18,15 +18,16 @@ Router.post("/", async (req: Request, res: Response) => {
   };
 
   try {
-    const result = await productService.getProducts(params);
-    if (result.errorMessage) {
-      return res
-        .status(500)
-        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    const { data, errorMessage } = await productService.getProducts(params);
+
+    if (errorMessage) {
+      res.status(500).json({ data: [], error: errorMessage });
+      return;
     }
-    res.status(200).json({ data: result.data });
+
+    res.status(200).json({ data, error: null });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch products", error });
+    res.status(500).json({ data: [], error: "Failed to fetch products" });
   }
 });
 
@@ -38,11 +39,9 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
     const image = req.files?.image || null;
     const albumPhotos = req.files?.albumPhotos || [];
 
-    const albumPhotosArray = Array.isArray(albumPhotos)
-      ? albumPhotos
-      : [albumPhotos];
+    const albumPhotosArray = Array.isArray(albumPhotos) ? albumPhotos : [albumPhotos];
 
-    const result = await productService.createProduct(
+    const { data, errorMessage } = await productService.createProduct(
       title,
       amount,
       price,
@@ -51,50 +50,46 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
       albumPhotosArray
     );
 
-    if (result.errorMessage) {
-      return res
-        .status(500)
-        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    if (errorMessage) {
+      res.status(500).json({ data: null, error: errorMessage });
+      return;
     }
-    res
-      .status(201)
-      .json({ message: "Product created successfully", data: result.data });
+
+    res.status(201).json({ message: "Product created successfully", data, error: null });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ data: null, error: error.message });
   }
 });
 
 Router.put("/:id", requireLogin, async (req, res) => {
   const productId = req.params.id;
   try {
-    const result = await productService.editTitle(productId, req.body);
-    if (result.errorMessage) {
-      return res
-        .status(500)
-        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    const { data, errorMessage } = await productService.editTitle(productId, req.body);
+    
+    if (errorMessage) {
+      res.status(500).json({ data: null, error: errorMessage });
+      return;
     }
-    res
-      .status(200)
-      .json({ message: "Element updated successfully", data: result.data });
+    
+    res.status(200).json({ message: "Element updated successfully", data, error: null });
   } catch (error: any) {
-    res.status(404).json({ message: "Not found", error: error.message });
+    res.status(404).json({ data: null, error: error.message });
   }
 });
 
 Router.delete("/:id", requireLogin, async (req, res) => {
   const productId = req.params.id;
   try {
-    const result = await productService.deleteProduct(productId);
-    if (result.errorMessage) {
-      return res
-        .status(500)
-        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    const { data, errorMessage } = await productService.deleteProduct(productId);
+
+    if (errorMessage) {
+      res.status(500).json({ data: null, error: errorMessage });
+      return;
     }
-    res
-      .status(200)
-      .json({ message: "Element deleted successfully", data: result.data });
+
+    res.status(200).json({ message: "Element deleted successfully", data, error: null });
   } catch (error: any) {
-    res.status(404).json({ message: "Not found", error: error.message });
+    res.status(404).json({ data: null, error: error.message });
   }
 });
 

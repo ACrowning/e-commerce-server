@@ -1,12 +1,13 @@
 import { promises as fs } from "fs";
 import { pool } from "../db";
+import path from "path";
 
-async function readSqlFile(filePath: string): Promise<string> {
+export async function readSqlFile(fileName: string): Promise<string> {
   try {
-    const data = await fs.readFile(filePath, "utf8");
-    return data;
+    const filePath = path.join(__dirname, "./queries", fileName);
+    return await fs.readFile(filePath, "utf8");
   } catch (error) {
-    throw new Error(`Error reading SQL file`);
+    throw `Error reading SQL file: ${error}`;
   }
 }
 
@@ -14,7 +15,7 @@ export async function initDatabaseStructure(
   sqlFilePath: string
 ): Promise<void> {
   try {
-    const sqlQuery = await readSqlFile(sqlFilePath);
+    const sqlQuery = await readSqlFile("init.sql");
 
     await pool.query(sqlQuery);
 
