@@ -1,5 +1,4 @@
-import express from "express";
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
 import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
 import { requireLogin } from "../middlewares/requireLogin";
@@ -20,14 +19,14 @@ Router.post("/", async (req: Request, res: Response) => {
 
   try {
     const result = await productService.getProducts(params);
-
-    res.status(200).json({ data: result });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "Failed to fetch products" });
+    if (result.errorMessage) {
+      return res
+        .status(500)
+        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
     }
+    res.status(200).json({ data: result.data });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch products", error });
   }
 });
 
@@ -43,7 +42,7 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
       ? albumPhotos
       : [albumPhotos];
 
-    const createdProduct = await productService.createProduct(
+    const result = await productService.createProduct(
       title,
       amount,
       price,
@@ -52,45 +51,54 @@ Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
       albumPhotosArray
     );
 
-    if (createdProduct) {
-      res.status(201).json({
-        message: "Product created successfully",
-        data: createdProduct,
-      });
-    } else {
-      res.status(500).json({ message: "Failed to create product" });
+    if (result.errorMessage) {
+      return res
+        .status(500)
+        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
     }
+    res
+      .status(201)
+      .json({ message: "Product created successfully", data: result.data });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
 
-Router.put("/:id", requireLogin, (req, res) => {
+Router.put("/:id", requireLogin, async (req, res) => {
   const productId = req.params.id;
-  const changeTitle = productService.editTitle(productId, req.body);
-  if (changeTitle) {
+  try {
+    const result = await productService.editTitle(productId, req.body);
+    if (result.errorMessage) {
+      return res
+        .status(500)
+        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    }
     res
       .status(200)
-      .json({ message: "Element updated successfully", data: changeTitle });
-  } else {
-    res.status(404).json({ message: "Not found" });
+      .json({ message: "Element updated successfully", data: result.data });
+  } catch (error: any) {
+    res.status(404).json({ message: "Not found", error: error.message });
   }
 });
 
-Router.delete("/:id", requireLogin, (req, res) => {
+Router.delete("/:id", requireLogin, async (req, res) => {
   const productId = req.params.id;
-  const deletedProduct = productService.deleteProduct(productId);
-  if (deletedProduct) {
-    res.status(200).json({
-      message: "Element deleted successfully",
-      data: deletedProduct,
-    });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  try {
+    const result = await productService.deleteProduct(productId);
+    if (result.errorMessage) {
+      return res
+        .status(500)
+        .json({ message: `${result.errorMessage}: ${result.errorRaw}` });
+    }
+    res
+      .status(200)
+      .json({ message: "Element deleted successfully", data: result.data });
+  } catch (error: any) {
+    res.status(404).json({ message: "Not found", error: error.message });
   }
 });
 
-Router.get("/:id", (req, res) => {
+Router.get("/:id", async (req, res) => {
   const productId = req.params.id;
   const element = productService.getElementById(productId);
   if (element) {

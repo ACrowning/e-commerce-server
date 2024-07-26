@@ -1,4 +1,3 @@
-// src/services/productService.ts
 import { Product } from "../database/elements";
 import {
   createProduct as dbCreateProduct,
@@ -10,6 +9,7 @@ import fs from "fs/promises";
 import { comments } from "../database/comments";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
+
 const uid = new ShortUniqueId({ length: 10 });
 
 interface GetProductsParams {
@@ -21,11 +21,7 @@ interface GetProductsParams {
 
 const productService = {
   getProducts: async (params: GetProductsParams) => {
-    const { data, errorMessage, errorRaw } = await dbGetProducts(params);
-    if (errorMessage) {
-      return `${errorMessage}: ${errorRaw}`;
-    }
-    return data;
+    return dbGetProducts(params);
   },
 
   createProduct: async (
@@ -49,47 +45,28 @@ const productService = {
           : [],
     };
 
-    const { data, errorMessage, errorRaw } = await dbCreateProduct(newProduct);
-    if (errorMessage) {
-      return `${errorMessage}: ${errorRaw}`;
-    }
-    return data;
+    return dbCreateProduct(newProduct);
   },
 
   editTitle: async (productId: string, updatedData: Partial<Product>) => {
-    const { data, errorMessage, errorRaw } = await dbUpdateProduct(
-      productId,
-      updatedData
-    );
-    if (errorMessage) {
-      return `${errorMessage}: ${errorRaw}`;
-    }
-    return data;
+    return dbUpdateProduct(productId, updatedData);
   },
 
   deleteProduct: async (productId: string) => {
-    const {
-      data: deletedProduct,
-      errorMessage,
-      errorRaw,
-    } = await dbDeleteProduct(productId);
+    const deletedProduct = await dbDeleteProduct(productId);
 
-    if (errorMessage) {
-      return `${errorMessage}: ${errorRaw}`;
-    }
-
-    if (deletedProduct) {
+    if (deletedProduct.data) {
       try {
-        if (deletedProduct.image) {
-          const imagePath = getImgPath(deletedProduct.image);
+        if (deletedProduct.data.image) {
+          const imagePath = getImgPath(deletedProduct.data.image);
           await fs.unlink(imagePath);
         }
 
         if (
-          deletedProduct.albumPhotos &&
-          deletedProduct.albumPhotos.length > 0
+          deletedProduct.data.albumPhotos &&
+          deletedProduct.data.albumPhotos.length > 0
         ) {
-          const deletePromises = deletedProduct.albumPhotos.map(
+          const deletePromises = deletedProduct.data.albumPhotos.map(
             async (photo: string) => {
               const photoPath = getImgPath(photo);
               return fs.unlink(photoPath);
@@ -103,36 +80,33 @@ const productService = {
       }
     }
 
-    return deletedProduct?.id || null;
+    return deletedProduct;
   },
 
   getElementById: async (productId: string) => {
-    const {
-      data: products,
-      errorMessage,
-      errorRaw,
-    } = await dbGetProducts({
+    const productsResponse = await dbGetProducts({
       title: "",
       sortByPrice: undefined,
       page: 1,
       limit: "*",
     });
-    if (errorMessage) {
-      return `${errorMessage}: ${errorRaw}`;
-    }
 
-    const product = products?.find(
-      (product: Product) => product.id === productId
-    );
-
-    if (product) {
-      const productComments = comments.filter(
-        (comment: { productId: any }) => comment.productId === productId
+    if (productsResponse.data) {
+      const product = productsResponse.data.find(
+        (product: Product) => product.id === productId
       );
-      return {
-        ...product,
-        comments: productComments,
-      };
+
+      if (product) {
+        const productComments = comments.filter(
+          (comment: { productId: any }) => comment.productId === productId
+        );
+        return {
+          ...product,
+          comments: productComments,
+        };
+      } else {
+        return null;
+      }
     } else {
       return null;
     }

@@ -1,23 +1,29 @@
-// src/database/repositories/products.ts
 import { pool } from "../../db";
 import { Product } from "../elements";
 import { QueryResult } from "pg";
 import { promises as fs } from "fs";
 import path from "path";
 
-async function readSqlFile(fileName: string): Promise<string> {
-  try {
-    const filePath = path.join(__dirname, "../queries", fileName);
-    return await fs.readFile(filePath, "utf8");
-  } catch (error) {
-    throw `Error reading SQL file: ${error}`;
-  }
+export interface GetProductsParams {
+  title?: string;
+  sortByPrice?: "asc" | "desc";
+  page?: number;
+  limit?: number | "*";
 }
 
 interface RepositoryResponse<T> {
   data: T | null;
   errorMessage: string | null;
   errorRaw: Error | null;
+}
+
+export async function readSqlFile(fileName: string): Promise<string> {
+  try {
+    const filePath = path.join(__dirname, "../queries", fileName);
+    return await fs.readFile(filePath, "utf8");
+  } catch (error) {
+    throw `Error reading SQL file: ${error}`;
+  }
 }
 
 export async function createProduct(
@@ -83,9 +89,7 @@ export async function getProducts(
   }
 }
 
-export async function deleteProduct(
-  productId: string
-): Promise<{
+export async function deleteProduct(productId: string): Promise<{
   data: Product | null;
   errorMessage: string | null;
   errorRaw: Error | null;
@@ -131,11 +135,4 @@ export async function updateProduct(
       errorRaw: error as Error,
     };
   }
-}
-
-export interface GetProductsParams {
-  title?: string;
-  sortByPrice?: "asc" | "desc";
-  page?: number;
-  limit?: number | "*";
 }
