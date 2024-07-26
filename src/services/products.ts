@@ -1,8 +1,15 @@
-import { Product, products } from "../database/elements";
+import { Product } from "../database/elements";
+import {
+  createProduct as dbCreateProduct,
+  getProducts as dbGetProducts,
+  deleteProduct as dbDeleteProduct,
+  updateProduct as dbUpdateProduct,
+} from "../database/repositories/products";
 import fs from "fs/promises";
 import { comments } from "../database/comments";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
+
 const uid = new ShortUniqueId({ length: 10 });
 
 interface GetProductsParams {
@@ -13,54 +20,15 @@ interface GetProductsParams {
 }
 
 const productService = {
-  getProducts: ({
-    title,
-    sortByPrice,
-    page = 1,
-    limit = 10,
-  }: GetProductsParams) => {
-    let filteredProducts = products;
-
-    if (title) {
-      filteredProducts = filteredProducts.filter((product) =>
-        product.title.toLowerCase().includes(title.toLowerCase())
-      );
-    }
-
-    if (sortByPrice) {
-      filteredProducts.sort((a, b) => {
-        if (sortByPrice === "asc") {
-          return a.price - b.price;
-        } else if (sortByPrice === "desc") {
-          return b.price - a.price;
-        } else {
-          return 0;
-        }
-      });
-    }
-
-    if (limit === "*") {
-      return {
-        currentPage: filteredProducts,
-        total: 1,
-      };
-    } else {
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const currentPage = filteredProducts.slice(startIndex, endIndex);
-
-      return {
-        currentPage,
-        total: Math.ceil(filteredProducts.length / limit),
-      };
-    }
+  getProducts: async (params: GetProductsParams) => {
+    return dbGetProducts(params);
   },
 
   createProduct: async (
-    title: any,
-    amount: any,
-    price: any,
-    favorite: any,
+    title: string,
+    amount: number,
+    price: number,
+    favorite: boolean,
     image: any,
     albumPhotos: any[]
   ) => {
@@ -70,50 +38,36 @@ const productService = {
       amount,
       price: price || Math.floor(Math.random() * 10),
       favorite,
+      image: image ? await saveImage(image) : null,
+      albumPhotos:
+        albumPhotos && albumPhotos.length > 0
+          ? await saveAlbum(albumPhotos)
+          : [],
     };
 
-    if (image) {
-      newProduct.image = await saveImage(image);
-    }
-
-    if (albumPhotos && albumPhotos.length > 0) {
-      newProduct.albumPhotos = await saveAlbum(albumPhotos);
-    }
-
-    products.push(newProduct);
-    return newProduct;
+    return dbCreateProduct(newProduct);
   },
 
-  editTitle: (productId: any, updatedData: any) => {
-    const index = products.findIndex(
-      (product: { id: any }) => product.id === productId
-    );
-    if (index !== -1) {
-      products[index] = {
-        ...products[index],
-        ...updatedData,
-      };
-      return products[index];
-    }
+  editTitle: async (productId: string, updatedData: Partial<Product>) => {
+    return dbUpdateProduct(productId, updatedData);
   },
 
-  deleteProduct: async (productId: any) => {
-    const index = products.findIndex(
-      (product: { id: any }) => product.id === productId
-    );
-    if (index !== -1) {
-      const deletedProduct = products.splice(index, 1)[0];
+  deleteProduct: async (productId: string) => {
+    const deletedProduct = await dbDeleteProduct(productId);
 
+    if (deletedProduct.data) {
       try {
-        const imagePath = getImgPath(deletedProduct.image);
-        await fs.unlink(imagePath);
+        if (deletedProduct.data.image) {
+          const imagePath = getImgPath(deletedProduct.data.image);
+          await fs.unlink(imagePath);
+        }
 
         if (
-          deletedProduct.albumPhotos &&
-          deletedProduct.albumPhotos.length > 0
+          deletedProduct.data.albumPhotos &&
+          deletedProduct.data.albumPhotos.length > 0
         ) {
-          const deletePromises = deletedProduct.albumPhotos.map(
-            async (photo: any) => {
+          const deletePromises = deletedProduct.data.albumPhotos.map(
+            async (photo: string) => {
               const photoPath = getImgPath(photo);
               return fs.unlink(photoPath);
             }
@@ -124,23 +78,35 @@ const productService = {
       } catch (error) {
         console.error("Failed to delete product images:", error);
       }
-
-      return deletedProduct.id;
     }
+
+    return deletedProduct;
   },
 
-  getElementById: (productId: any) => {
-    const product = products.find(
-      (product: { id: any }) => product.id === productId
-    );
-    if (product) {
-      const productComments = comments.filter(
-        (comment: { productId: any }) => comment.productId === productId
+  getElementById: async (productId: string) => {
+    const productsResponse = await dbGetProducts({
+      title: "",
+      sortByPrice: undefined,
+      page: 1,
+      limit: "*",
+    });
+
+    if (productsResponse.data) {
+      const product = productsResponse.data.find(
+        (product: Product) => product.id === productId
       );
-      return {
-        ...product,
-        comments: productComments,
-      };
+
+      if (product) {
+        const productComments = comments.filter(
+          (comment: { productId: any }) => comment.productId === productId
+        );
+        return {
+          ...product,
+          comments: productComments,
+        };
+      } else {
+        return null;
+      }
     } else {
       return null;
     }

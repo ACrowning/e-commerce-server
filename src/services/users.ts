@@ -1,7 +1,7 @@
 import { User, users, UserRequest, UserResponse } from "../database/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { SECRET_KEY } from "../config";
+import { SECRET_KEY } from "../config/config";
 import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length: 10 });
@@ -57,7 +57,7 @@ export const authenticateUser = async (
     return null;
   }
 
-  const token = jwt.sign({ id: user.id }, SECRET_KEY);
+  const token = jwt.sign({ id: user.id }, SECRET_KEY || "");
 
   return { user, token };
 };
