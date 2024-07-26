@@ -1,3 +1,4 @@
+// src/services/productService.ts
 import { Product } from "../database/elements";
 import {
   createProduct as dbCreateProduct,
@@ -20,8 +21,10 @@ interface GetProductsParams {
 
 const productService = {
   getProducts: async (params: GetProductsParams) => {
-    const { data } = await dbGetProducts(params);
-
+    const { data, errorMessage, errorRaw } = await dbGetProducts(params);
+    if (errorMessage) {
+      return `${errorMessage}: ${errorRaw}`;
+    }
     return data;
   },
 
@@ -46,19 +49,34 @@ const productService = {
           : [],
     };
 
-    const { data } = await dbCreateProduct(newProduct);
-
+    const { data, errorMessage, errorRaw } = await dbCreateProduct(newProduct);
+    if (errorMessage) {
+      return `${errorMessage}: ${errorRaw}`;
+    }
     return data;
   },
 
   editTitle: async (productId: string, updatedData: Partial<Product>) => {
-    const { data } = await dbUpdateProduct(productId, updatedData);
-
+    const { data, errorMessage, errorRaw } = await dbUpdateProduct(
+      productId,
+      updatedData
+    );
+    if (errorMessage) {
+      return `${errorMessage}: ${errorRaw}`;
+    }
     return data;
   },
 
   deleteProduct: async (productId: string) => {
-    const { data: deletedProduct } = await dbDeleteProduct(productId);
+    const {
+      data: deletedProduct,
+      errorMessage,
+      errorRaw,
+    } = await dbDeleteProduct(productId);
+
+    if (errorMessage) {
+      return `${errorMessage}: ${errorRaw}`;
+    }
 
     if (deletedProduct) {
       try {
@@ -89,12 +107,19 @@ const productService = {
   },
 
   getElementById: async (productId: string) => {
-    const { data: products } = await dbGetProducts({
+    const {
+      data: products,
+      errorMessage,
+      errorRaw,
+    } = await dbGetProducts({
       title: "",
       sortByPrice: undefined,
       page: 1,
       limit: "*",
     });
+    if (errorMessage) {
+      return `${errorMessage}: ${errorRaw}`;
+    }
 
     const product = products?.find(
       (product: Product) => product.id === productId

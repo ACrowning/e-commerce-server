@@ -1,18 +1,13 @@
+// src/database/repositories/products.ts
 import { pool } from "../../db";
 import { Product } from "../elements";
 import { QueryResult } from "pg";
 import { promises as fs } from "fs";
 import path from "path";
 
-export interface GetProductsParams {
-  title?: string;
-  sortByPrice?: "asc" | "desc";
-  page?: number;
-  limit?: number | "*";
-}
-
-async function readSqlFile(filePath: string): Promise<string> {
+async function readSqlFile(fileName: string): Promise<string> {
   try {
+    const filePath = path.join(__dirname, "../queries", fileName);
     return await fs.readFile(filePath, "utf8");
   } catch (error) {
     throw `Error reading SQL file: ${error}`;
@@ -21,7 +16,8 @@ async function readSqlFile(filePath: string): Promise<string> {
 
 interface RepositoryResponse<T> {
   data: T | null;
-  error: string | null;
+  errorMessage: string | null;
+  errorRaw: Error | null;
 }
 
 export async function createProduct(
@@ -29,9 +25,7 @@ export async function createProduct(
 ): Promise<RepositoryResponse<Product>> {
   const { id, title, amount, price, favorite, image, albumPhotos } = product;
 
-  const query = await readSqlFile(
-    path.join(__dirname, "../queries/create_product.sql")
-  );
+  const query = await readSqlFile("create_product.sql");
   const values = [
     id,
     title,
@@ -44,9 +38,13 @@ export async function createProduct(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows[0], error: null };
+    return { data: result.rows[0], errorMessage: null, errorRaw: null };
   } catch (error) {
-    return { data: null, error: `Error creating product: ${error}` };
+    return {
+      data: null,
+      errorMessage: "Error creating product",
+      errorRaw: error as Error,
+    };
   }
 }
 
@@ -75,26 +73,34 @@ export async function getProducts(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows, error: null };
+    return { data: result.rows, errorMessage: null, errorRaw: null };
   } catch (error) {
-    return { data: null, error: `Error fetching products: ${error}` };
+    return {
+      data: null,
+      errorMessage: "Error fetching products",
+      errorRaw: error as Error,
+    };
   }
 }
 
 export async function deleteProduct(
   productId: string
-): Promise<RepositoryResponse<Product | null>> {
-  const query = `
-    DELETE FROM products
-    WHERE id = $1
-    RETURNING *;
-  `;
-
+): Promise<{
+  data: Product | null;
+  errorMessage: string | null;
+  errorRaw: Error | null;
+}> {
   try {
+    const query = await readSqlFile("delete_product.sql");
+
     const result: QueryResult<Product> = await pool.query(query, [productId]);
-    return { data: result.rows[0] || null, error: null };
+    return { data: result.rows[0] || null, errorMessage: null, errorRaw: null };
   } catch (error) {
-    return { data: null, error: `Error deleting product: ${error}` };
+    return {
+      data: null,
+      errorMessage: "Error deleting product",
+      errorRaw: error as Error,
+    };
   }
 }
 
@@ -104,18 +110,7 @@ export async function updateProduct(
 ): Promise<RepositoryResponse<Product | null>> {
   const { title, amount, price, favorite, image, albumPhotos } = updatedData;
 
-  const query = `
-    UPDATE products
-    SET title = COALESCE($2, title),
-        amount = COALESCE($3, amount),
-        price = COALESCE($4, price),
-        favorite = COALESCE($5, favorite),
-        image = COALESCE($6, image),
-        album_photos = COALESCE($7, album_photos)
-    WHERE id = $1
-    RETURNING *;
-  `;
-
+  const query = await readSqlFile("update_product.sql");
   const values = [
     productId,
     title,
@@ -128,8 +123,19 @@ export async function updateProduct(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows[0] || null, error: null };
+    return { data: result.rows[0] || null, errorMessage: null, errorRaw: null };
   } catch (error) {
-    return { data: null, error: `Error updating product: ${error}` };
+    return {
+      data: null,
+      errorMessage: "Error updating product",
+      errorRaw: error as Error,
+    };
   }
+}
+
+export interface GetProductsParams {
+  title?: string;
+  sortByPrice?: "asc" | "desc";
+  page?: number;
+  limit?: number | "*";
 }

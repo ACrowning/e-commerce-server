@@ -17,7 +17,7 @@ const adminOnly = async (
   }
 
   try {
-    const decodedToken = jwt.verify(token, SECRET_KEY || "") as JwtPayload;
+    const decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
     const userId = decodedToken.id;
 
     const user = await findUserById(userId);

@@ -21,7 +21,7 @@ export const addUser = async (
 
   users.push(newUser);
 
-  const token = jwt.sign({ id: newUser.id }, SECRET_KEY || "");
+  const token = jwt.sign({ id: newUser.id }, SECRET_KEY);
 
   return { user: newUser, token };
 };
