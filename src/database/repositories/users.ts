@@ -1,12 +1,11 @@
 import { pool } from "../../db";
 import { User, UserRequest, UserResponse } from "../users";
 import { QueryResult } from "pg";
-import { promises as fs } from "fs";
-import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../../config/config";
 import ShortUniqueId from "short-unique-id";
+import { readSqlFile } from "..";
 
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -14,15 +13,6 @@ interface RepositoryResponse<T> {
   data: T | null;
   errorMessage: string | null;
   errorRaw: Error | null;
-}
-
-async function readSqlFile(fileName: string): Promise<string> {
-  try {
-    const filePath = path.join(__dirname, "../queries", fileName);
-    return await fs.readFile(filePath, "utf8");
-  } catch (error) {
-    throw `Error reading SQL file: ${error}`;
-  }
 }
 
 export async function addUser(
