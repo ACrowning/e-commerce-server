@@ -15,7 +15,7 @@ export async function initDatabaseStructure(
   sqlFilePath: string
 ): Promise<void> {
   try {
-    const sqlQuery = await readSqlFile("init.sql");
+    const sqlQuery = await readSqlFile(sqlFilePath);
 
     await pool.query(sqlQuery);
 

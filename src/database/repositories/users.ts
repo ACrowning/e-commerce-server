@@ -23,7 +23,8 @@ export async function addUser(
 
   const newUser: User = {
     id: uid.rnd(),
-    ...userRequest,
+    username: userRequest.username,
+    email: userRequest.email,
     password: hashedPassword,
     role: userRequest.role,
   };

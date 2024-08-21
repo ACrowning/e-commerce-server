@@ -6,6 +6,8 @@ import {
   findUserByEmail,
   findUserById,
 } from "../services/users";
+
+import { userService } from "../services/users";
 import { userSignupValidator, userLoginValidator } from "../validators";
 import { requireLogin } from "../middlewares/requireLogin";
 import { UserRequest } from "../database/users";
@@ -14,6 +16,55 @@ import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config/config";
 
 const Router = express.Router();
+
+Router.post("/register", async (req: Request, res: Response) => {
+  const { username, password, email, role } = req.body;
+
+  const userRequest: UserRequest = {
+    username,
+    password,
+    email,
+    role,
+  };
+
+  try {
+    const { data, errorMessage } = await userService.addUser(userRequest);
+
+    if (errorMessage) {
+      res.status(500).json({ data: null, error: errorMessage });
+      return;
+    }
+
+    res
+      .status(201)
+      .json({ message: "User registered successfully", data, error: null });
+  } catch (error: any) {
+    res.status(500).json({ data: null, error: error.message });
+  }
+});
+
+Router.get("/find-by-email", async (req: Request, res: Response) => {
+  const email = req.query.email as string;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ data: null, error: "Email query parameter is required" });
+  }
+
+  try {
+    const { data, errorMessage } = await userService.findUserByEmail(email);
+
+    if (errorMessage) {
+      res.status(404).json({ data: null, error: errorMessage });
+      return;
+    }
+
+    res.status(200).json({ data, error: null });
+  } catch (error: any) {
+    res.status(500).json({ data: null, error: error.message });
+  }
+});
 
 Router.post(
   "/signup",
