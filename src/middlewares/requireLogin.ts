@@ -1,13 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config/config";
-import { findUserById } from "../services/users";
+import { userService } from "../services/users";
 
 interface JwtPayload {
   id: string;
 }
 
-const requireLogin = (req: Request, res: Response, next: NextFunction) => {
+const requireLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
@@ -19,9 +23,9 @@ const requireLogin = (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
     const userId = decodedToken.id;
 
-    const user = findUserById(userId);
+    const { data: user, errorMessage } = await userService.findUserById(userId);
 
-    if (!user) {
+    if (errorMessage || !user) {
       res.status(401).json({ message: "Access Denied: User not found" });
       return;
     }

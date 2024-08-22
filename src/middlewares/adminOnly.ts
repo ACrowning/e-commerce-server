@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config/config";
-import { findUserById } from "../services/users";
+import { userService } from "../services/users";
 import { Role } from "../enums";
 
 const adminOnly = async (
@@ -17,12 +17,12 @@ const adminOnly = async (
   }
 
   try {
-    const decodedToken = jwt.verify(token, SECRET_KEY) as JwtPayload;
+    const decodedToken = jwt.verify(token, SECRET_KEY) as { id: string };
     const userId = decodedToken.id;
 
-    const user = await findUserById(userId);
+    const { data: user, errorMessage } = await userService.findUserById(userId);
 
-    if (!user) {
+    if (errorMessage || !user) {
       res.status(401).json({ message: "Access Denied: User not found" });
       return;
     }

@@ -22,7 +22,7 @@ export async function addUser(
     id: uid.rnd(),
     username: userRequest.username,
     email: userRequest.email,
-    password: userRequest.password, // Оставляем пароль без хэширования
+    password: userRequest.password,
     role: userRequest.role,
   };
 
@@ -65,6 +65,28 @@ export async function findUserByEmail(
     return {
       data: null,
       errorMessage: "Error finding user by email",
+      errorRaw: error as Error,
+    };
+  }
+}
+
+export async function findUserById(
+  id: string
+): Promise<RepositoryResponse<User | null>> {
+  const query = await readSqlFile("find_user_by_id.sql");
+  const values = [id];
+
+  try {
+    const result: QueryResult<User> = await pool.query(query, values);
+    return {
+      data: result.rows[0] || null,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      errorMessage: "Error finding user by ID",
       errorRaw: error as Error,
     };
   }
