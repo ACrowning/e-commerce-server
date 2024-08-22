@@ -18,14 +18,11 @@ interface RepositoryResponse<T> {
 export async function addUser(
   userRequest: UserRequest
 ): Promise<RepositoryResponse<UserResponse>> {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userRequest.password, salt);
-
   const newUser: User = {
     id: uid.rnd(),
     username: userRequest.username,
     email: userRequest.email,
-    password: hashedPassword,
+    password: userRequest.password, // Оставляем пароль без хэширования
     role: userRequest.role,
   };
 
