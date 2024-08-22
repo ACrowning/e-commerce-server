@@ -1,12 +1,6 @@
 import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import {
-  addUser,
-  authenticateUser,
-  findUserByEmail,
-  findUserById,
-} from "../services/users";
-
+import { findUserById } from "../services/users";
 import { userService } from "../services/users";
 import { userSignupValidator, userLoginValidator } from "../validators";
 import { requireLogin } from "../middlewares/requireLogin";
@@ -16,55 +10,6 @@ import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../config/config";
 
 const Router = express.Router();
-
-Router.post("/register", async (req: Request, res: Response) => {
-  const { username, password, email, role } = req.body;
-
-  const userRequest: UserRequest = {
-    username,
-    password,
-    email,
-    role,
-  };
-
-  try {
-    const { data, errorMessage } = await userService.addUser(userRequest);
-
-    if (errorMessage) {
-      res.status(500).json({ data: null, error: errorMessage });
-      return;
-    }
-
-    res
-      .status(201)
-      .json({ message: "User registered successfully", data, error: null });
-  } catch (error: any) {
-    res.status(500).json({ data: null, error: error.message });
-  }
-});
-
-Router.get("/find-by-email", async (req: Request, res: Response) => {
-  const email = req.query.email as string;
-
-  if (!email) {
-    return res
-      .status(400)
-      .json({ data: null, error: "Email query parameter is required" });
-  }
-
-  try {
-    const { data, errorMessage } = await userService.findUserByEmail(email);
-
-    if (errorMessage) {
-      res.status(404).json({ data: null, error: errorMessage });
-      return;
-    }
-
-    res.status(200).json({ data, error: null });
-  } catch (error: any) {
-    res.status(500).json({ data: null, error: error.message });
-  }
-});
 
 Router.post(
   "/signup",
@@ -78,17 +23,29 @@ Router.post(
 
     const { username, password, email, role } = req.body;
 
-    const existingUser = findUserByEmail(email);
-    if (existingUser !== null) {
+    const { data: existingUser } = await userService.findUserByEmail(email);
+    if (existingUser) {
       res.status(400).json({ message: "User already exists" });
       return;
     }
 
     const userRequest: UserRequest = { username, password, email, role };
-    const { user, token } = await addUser(userRequest);
-    res
-      .status(201)
-      .json({ message: "User registered successfully", user, token });
+    const { data: newUser, errorMessage } = await userService.addUser(
+      userRequest
+    );
+
+    if (errorMessage) {
+      res
+        .status(500)
+        .json({ message: "Failed to register user", error: errorMessage });
+    } else if (newUser) {
+      const { user, token } = newUser;
+      res
+        .status(201)
+        .json({ message: "User registered successfully", user, token });
+    } else {
+      res.status(500).json({ message: "Unknown error occurred" });
+    }
   }
 );
 
@@ -104,13 +61,19 @@ Router.post(
 
     const { email, password } = req.body;
 
-    const authResult = await authenticateUser(email, password);
-    if (!authResult) {
-      res.status(400).json({ message: "Invalid email or password" });
+    const { data, errorMessage } = await userService.authenticateUser(
+      email,
+      password
+    );
+
+    if (!data) {
+      res
+        .status(400)
+        .json({ message: errorMessage || "Invalid email or password" });
       return;
     }
 
-    const { user, token } = authResult;
+    const { user, token } = data;
     res.status(200).json({ message: "Login successful", user, token });
   }
 );

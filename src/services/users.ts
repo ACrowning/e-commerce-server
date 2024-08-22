@@ -82,35 +82,36 @@ const userService = {
       };
     }
   },
-};
 
-export const addUser = async (
-  userRequest: UserRequest
-): Promise<UserResponse> => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userRequest.password, salt);
+  authenticateUser: async (
+    email: string,
+    password: string
+  ): Promise<{
+    data: UserResponse | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const { data: user } = await userService.findUserByEmail(email);
 
-  const newUser: User = {
-    id: uid.rnd(),
-    ...userRequest,
-    password: hashedPassword,
-    role: userRequest.role,
-  };
+    if (!user) {
+      return { data: null, errorMessage: "User not found", errorRaw: null };
+    }
 
-  users.push(newUser);
+    console.log("User password:", user.password);
+    console.log("Input password:", password);
 
-  const token = jwt.sign({ id: newUser.id }, SECRET_KEY);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-  return { user: newUser, token };
-};
+    console.log("Password valid:", isPasswordValid);
 
-export const findUserByEmail = (email: string): User | null => {
-  if (!email) {
-    return null;
-  }
+    if (!isPasswordValid) {
+      return { data: null, errorMessage: "Invalid password", errorRaw: null };
+    }
 
-  const user = users.find((user) => user.email === email);
-  return user || null;
+    const token = jwt.sign({ id: user.id }, SECRET_KEY || "");
+
+    return { data: { user, token }, errorMessage: null, errorRaw: null };
+  },
 };
 
 export const findUserById = (id: string): User | null => {
@@ -121,23 +122,23 @@ export const findUserById = (id: string): User | null => {
   return user || null;
 };
 
-export const authenticateUser = async (
-  email: string,
-  password: string
-): Promise<{ user: User; token: string } | null> => {
-  const user = findUserByEmail(email);
-  if (!user) {
-    return null;
-  }
+// export const authenticateUser = async (
+//   email: string,
+//   password: string
+// ): Promise<{ user: User; token: string } | null> => {
+//   const user = userService.findUserByEmail(email);
+//   if (!user) {
+//     return null;
+//   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    return null;
-  }
+//   const isPasswordValid = await bcrypt.compare(password, user.password);
+//   if (!isPasswordValid) {
+//     return null;
+//   }
 
-  const token = jwt.sign({ id: user.id }, SECRET_KEY || "");
+//   const token = jwt.sign({ id: user.id }, SECRET_KEY || "");
 
-  return { user, token };
-};
+//   return { user, token };
+// };
 
 export { userService };

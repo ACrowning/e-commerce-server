@@ -57,7 +57,7 @@ export async function addUser(
 
 export async function findUserByEmail(
   email: string
-): Promise<RepositoryResponse<User | null>> {
+): Promise<RepositoryResponse<User>> {
   const query = await readSqlFile("find_user_by_email.sql");
   const values = [email];
 

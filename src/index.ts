@@ -14,9 +14,7 @@ const readyMessage = () => console.log("Server on http://localhost:" + PORT);
 
 async function initApp() {
   try {
-    await initDatabaseStructure(
-      path.join(__dirname, "database", "queries", "init.sql")
-    );
+    await initDatabaseStructure("init.sql");
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
