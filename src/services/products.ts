@@ -104,12 +104,10 @@ const productService = {
           ...product,
           comments: productComments,
         };
-      } else {
-        return null;
       }
-    } else {
       return null;
     }
+    return null;
   },
 };
 

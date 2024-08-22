@@ -1,11 +1,6 @@
 import express, { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import {
-  addUser,
-  authenticateUser,
-  findUserByEmail,
-  findUserById,
-} from "../services/users";
+import { userService } from "../services/users";
 import { userSignupValidator, userLoginValidator } from "../validators";
 import { requireLogin } from "../middlewares/requireLogin";
 import { UserRequest } from "../database/users";
@@ -27,17 +22,29 @@ Router.post(
 
     const { username, password, email, role } = req.body;
 
-    const existingUser = findUserByEmail(email);
-    if (existingUser !== null) {
+    const { data: existingUser } = await userService.findUserByEmail(email);
+    if (existingUser) {
       res.status(400).json({ message: "User already exists" });
       return;
     }
 
     const userRequest: UserRequest = { username, password, email, role };
-    const { user, token } = await addUser(userRequest);
-    res
-      .status(201)
-      .json({ message: "User registered successfully", user, token });
+    const { data: newUser, errorMessage } = await userService.addUser(
+      userRequest
+    );
+
+    if (errorMessage) {
+      res
+        .status(500)
+        .json({ message: "Failed to register user", error: errorMessage });
+    } else if (newUser) {
+      const { user, token } = newUser;
+      res
+        .status(201)
+        .json({ message: "User registered successfully", user, token });
+    } else {
+      res.status(500).json({ message: "Unknown error occurred" });
+    }
   }
 );
 
@@ -53,18 +60,24 @@ Router.post(
 
     const { email, password } = req.body;
 
-    const authResult = await authenticateUser(email, password);
-    if (!authResult) {
-      res.status(400).json({ message: "Invalid email or password" });
+    const { data, errorMessage } = await userService.authenticateUser(
+      email,
+      password
+    );
+
+    if (!data) {
+      res
+        .status(400)
+        .json({ message: errorMessage || "Invalid email or password" });
       return;
     }
 
-    const { user, token } = authResult;
+    const { user, token } = data;
     res.status(200).json({ message: "Login successful", user, token });
   }
 );
 
-Router.get("/user", requireLogin, (req: Request, res: Response) => {
+Router.get("/user", requireLogin, async (req: Request, res: Response) => {
   const token = req.header("Authorization")?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
@@ -72,10 +85,14 @@ Router.get("/user", requireLogin, (req: Request, res: Response) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY) as { id: string };
-    const user = findUserById(decoded.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const { data: user, errorMessage } = await userService.findUserById(
+      decoded.id
+    );
+
+    if (errorMessage) {
+      return res.status(404).json({ message: errorMessage });
     }
+
     res.status(200).json({ user });
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
