@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS comments (
     text TEXT NOT NULL,
     date TIMESTAMP NOT NULL,
     user_id VARCHAR(255) DEFAULT NULL,
-     parent_comment_id VARCHAR(255) DEFAULT NULL
+    parent_comment_id VARCHAR(255) DEFAULT NULL,
+    FOREIGN KEY (parent_comment_id) REFERENCES comments(id) ON DELETE CASCADE
 );
