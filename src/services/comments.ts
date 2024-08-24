@@ -1,6 +1,12 @@
 import { comments } from "../database/comments";
 import ShortUniqueId from "short-unique-id";
 import { User, Comment } from "../database/comments";
+import {
+  getAllComments as dbGetComments,
+  findCommentsByProductId as dbGetCommentsByProductId,
+  addComment as dbAddComment,
+  RepositoryResponse,
+} from "../database/repositories/comments";
 const uid = new ShortUniqueId({ length: 10 });
 
 const addNestedComment = (
@@ -48,36 +54,59 @@ const findAndUpdateComment = (
 };
 
 const commentsService = {
-  getComments: () => {
-    return comments;
+  getComments: async (): Promise<RepositoryResponse<Comment[]>> => {
+    const response = await dbGetComments();
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  getCommentsByProductId: (productId: string) => {
-    return comments.filter((comment) => comment.productId === productId);
+  getCommentsByProductId: async (
+    productId: string
+  ): Promise<RepositoryResponse<Comment[]>> => {
+    const response = await dbGetCommentsByProductId(productId);
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  addComment: (
+  addComment: async (
     productId: string,
     text: string,
-    user: User,
+    userId: string | null = null,
     parentCommentId: string | null = null
-  ) => {
-    const newComment: Comment = {
+  ): Promise<{
+    data: Comment | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const newComment = {
       id: uid.rnd(),
       productId,
       text,
       date: new Date(),
-      user,
-      comments: [],
+      userId,
+      parentCommentId,
     };
 
-    if (parentCommentId) {
-      addNestedComment(comments, newComment, parentCommentId);
-    } else {
-      comments.push(newComment);
-    }
+    const response = await dbAddComment(
+      newComment.id,
+      newComment.productId,
+      newComment.text,
+      newComment.date,
+      newComment.userId,
+      newComment.parentCommentId
+    );
 
-    return newComment;
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
   removeComment: (commentId: string) => {
