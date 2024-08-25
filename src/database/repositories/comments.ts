@@ -83,3 +83,54 @@ export async function getAllComments(): Promise<RepositoryResponse<Comment[]>> {
     };
   }
 }
+
+export async function updateComment(
+  id: string,
+  newText: string
+): Promise<{
+  data: Comment | null;
+  errorMessage: string | null;
+  errorRaw: Error | null;
+}> {
+  const query = await readSqlFile("update_comment.sql");
+  const values = [newText, id];
+
+  try {
+    const result: QueryResult<Comment> = await pool.query(query, values);
+    return {
+      data: result.rows[0] || null,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      errorMessage: "Error updating comment",
+      errorRaw: error as Error,
+    };
+  }
+}
+
+export async function deleteComment(id: string): Promise<{
+  data: boolean;
+  errorMessage: string | null;
+  errorRaw: Error | null;
+}> {
+  const query = await readSqlFile("delete_comment.sql");
+  const values = [id];
+
+  try {
+    await pool.query(query, values);
+    return {
+      data: true,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    return {
+      data: false,
+      errorMessage: "Error deleting comment",
+      errorRaw: error as Error,
+    };
+  }
+}

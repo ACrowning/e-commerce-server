@@ -66,16 +66,42 @@ Router.get("/:productId", async (req: Request, res: Response) => {
   }
 });
 
-Router.put("/:id", (req: any, res: any) => {
-  const commentId = req.params.id;
+Router.put("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
   const { text } = req.body;
-  const changeComment = commentsService.editComment(commentId, text);
-  if (changeComment) {
-    res
-      .status(200)
-      .json({ message: "Comment updated successfully", data: changeComment });
-  } else {
-    res.status(404).json({ message: "Not found" });
+
+  try {
+    const { data: updatedComment, errorMessage } =
+      await commentsService.updateComment(id, text);
+
+    if (errorMessage) {
+      res
+        .status(500)
+        .json({ message: "Unable to update comment", error: errorMessage });
+    } else if (updatedComment) {
+      res.status(200).json({ data: updatedComment });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
+  }
+});
+
+Router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  try {
+    const { data: deletedComment, errorMessage } =
+      await commentsService.deleteComment(id);
+
+    if (errorMessage) {
+      res
+        .status(500)
+        .json({ message: "Unable to delete comment", error: errorMessage });
+    } else if (deletedComment) {
+      res.status(200).json({ message: "Comment deleted successfully" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
   }
 });
 
