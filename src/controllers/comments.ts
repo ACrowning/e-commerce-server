@@ -1,9 +1,9 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { commentsService } from "../services/comments";
 
 const Router = express.Router();
 
-Router.get("/", async (req: any, res: any): Promise<void> => {
+Router.get("/", async (req: Request, res: Response): Promise<void> => {
   try {
     const { data: allComments, errorMessage } =
       await commentsService.getComments();
@@ -19,7 +19,7 @@ Router.get("/", async (req: any, res: any): Promise<void> => {
   }
 });
 
-Router.post("/comment", async (req: any, res: any): Promise<void> => {
+Router.post("/comment", async (req: Request, res: Response): Promise<void> => {
   const { productId, text, user, parentCommentId } = req.body;
 
   try {
@@ -42,7 +42,7 @@ Router.post("/comment", async (req: any, res: any): Promise<void> => {
   }
 });
 
-Router.get("/:productId", async (req: any, res: any) => {
+Router.get("/:productId", async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
 
