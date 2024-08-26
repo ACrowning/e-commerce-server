@@ -1,6 +1,13 @@
-import { comments } from "../database/comments";
 import ShortUniqueId from "short-unique-id";
 import { User, Comment } from "../database/comments";
+import {
+  getAllComments as dbGetComments,
+  findCommentsByProductId as dbGetCommentsByProductId,
+  addComment as dbAddComment,
+  updateComment as dbUpdateComment,
+  deleteComment as dbDeleteComment,
+  RepositoryResponse,
+} from "../database/repositories/comments";
 const uid = new ShortUniqueId({ length: 10 });
 
 const addNestedComment = (
@@ -19,75 +26,93 @@ const addNestedComment = (
   }
 };
 
-const findAndRemoveComment = (commentList: Comment[], commentId: string) => {
-  for (let i = 0; i < commentList.length; i++) {
-    if (commentList[i].id === commentId) {
-      commentList.splice(i, 1);
-      return;
-    }
-    if (commentList[i].comments.length > 0) {
-      findAndRemoveComment(commentList[i].comments, commentId);
-    }
-  }
-};
-
-const findAndUpdateComment = (
-  commentList: Comment[],
-  commentId: string,
-  newText: string
-) => {
-  for (let i = 0; i < commentList.length; i++) {
-    if (commentList[i].id === commentId) {
-      commentList[i].text = newText;
-      commentList[i].date = new Date();
-    }
-    if (commentList[i].comments.length > 0) {
-      findAndUpdateComment(commentList[i].comments, commentId, newText);
-    }
-  }
-};
-
 const commentsService = {
-  getComments: () => {
-    return comments;
+  getComments: async (): Promise<RepositoryResponse<Comment[]>> => {
+    const response = await dbGetComments();
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  getCommentsByProductId: (productId: string) => {
-    return comments.filter((comment) => comment.productId === productId);
+  getCommentsByProductId: async (
+    productId: string
+  ): Promise<RepositoryResponse<Comment[]>> => {
+    const response = await dbGetCommentsByProductId(productId);
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  addComment: (
+  addComment: async (
     productId: string,
     text: string,
-    user: User,
+    userId: string | null = null,
     parentCommentId: string | null = null
-  ) => {
-    const newComment: Comment = {
+  ): Promise<{
+    data: Comment | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const newComment = {
       id: uid.rnd(),
       productId,
       text,
       date: new Date(),
-      user,
-      comments: [],
+      userId,
+      parentCommentId,
     };
 
-    if (parentCommentId) {
-      addNestedComment(comments, newComment, parentCommentId);
-    } else {
-      comments.push(newComment);
-    }
+    const response = await dbAddComment(
+      newComment.id,
+      newComment.productId,
+      newComment.text,
+      newComment.date,
+      newComment.userId,
+      newComment.parentCommentId
+    );
 
-    return newComment;
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  removeComment: (commentId: string) => {
-    findAndRemoveComment(comments, commentId);
-    return comments;
+  updateComment: async (
+    id: string,
+    newText: string
+  ): Promise<{
+    data: Comment | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbUpdateComment(id, newText);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  editComment: (commentId: string, newText: string) => {
-    findAndUpdateComment(comments, commentId, newText);
-    return comments;
+  deleteComment: async (
+    id: string
+  ): Promise<{
+    data: boolean;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbDeleteComment(id);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 };
 

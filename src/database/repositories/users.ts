@@ -1,7 +1,6 @@
 import { pool } from "../../db";
 import { User, UserRequest, UserResponse } from "../users";
 import { QueryResult } from "pg";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../../config/config";
 import ShortUniqueId from "short-unique-id";
