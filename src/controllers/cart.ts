@@ -1,33 +1,58 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { cartService } from "../services/cart";
 
 const Router = express.Router();
 
-Router.get("/", (req: any, res: any) => {
-  const cartItems = cartService.getCart();
-  res.send({ data: cartItems });
+Router.post("/add", async (req: Request, res: Response): Promise<void> => {
+  const { userId, productId, amount, price } = req.body;
+
+  try {
+    const { data: newProduct, errorMessage } =
+      await cartService.addProductToCart(userId, productId, amount, price);
+
+    if (errorMessage) {
+      res.status(500).json({
+        message: "Failed to add product to cart",
+        error: errorMessage,
+      });
+    } else if (newProduct) {
+      res.status(201).json({
+        message: "Product added to cart successfully",
+        data: newProduct,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
+  }
 });
 
-Router.post("/", (req: any, res: any) => {
-  const newItem = req.body;
-  const result: any = cartService.addItemToCart(newItem);
-  if (result.success) {
-    res.status(201).json({
-      message: "Item added to cart successfully",
-      data: result.cartItems,
-    });
-  } else {
-    res.status(400).json({
-      message: "Failed to add item to cart",
-      error: result.error,
-    });
+Router.get("/:userId", async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.params;
+
+  try {
+    const { data: allProducts, errorMessage } =
+      await cartService.getAllProductsInCart(userId);
+
+    if (errorMessage) {
+      res.status(500).json({
+        message: "Failed to retrieve products from cart",
+        error: errorMessage,
+      });
+    } else {
+      res.status(200).json({ data: allProducts });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
   }
 });
 
 Router.put("/:id", (req: any, res: any) => {
   const productId = req.params.id;
   const updatedItemData = req.body;
-  const result: any = cartService.updateProductAmount(productId, updatedItemData);
+  const result: any = cartService.updateProductAmount(
+    productId,
+    updatedItemData
+  );
   if (result.success) {
     res
       .status(200)
