@@ -12,8 +12,7 @@ const cartService = {
   addProductToCart: async (
     userId: string,
     productId: string,
-    amount: number,
-    price: number
+    amount: number
   ): Promise<{
     data: ShopCart | null;
     errorMessage: string | null;
@@ -21,13 +20,7 @@ const cartService = {
   }> => {
     const id = uid.rnd();
 
-    const response = await dbAddProductToCart(
-      id,
-      userId,
-      productId,
-      amount,
-      price
-    );
+    const response = await dbAddProductToCart(id, userId, productId, amount);
 
     return {
       data: response.data,

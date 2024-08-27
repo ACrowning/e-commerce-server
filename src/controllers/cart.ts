@@ -4,11 +4,11 @@ import { cartService } from "../services/cart";
 const Router = express.Router();
 
 Router.post("/add", async (req: Request, res: Response): Promise<void> => {
-  const { userId, productId, amount, price } = req.body;
+  const { userId, productId, amount } = req.body;
 
   try {
     const { data: newProduct, errorMessage } =
-      await cartService.addProductToCart(userId, productId, amount, price);
+      await cartService.addProductToCart(userId, productId, amount);
 
     if (errorMessage) {
       res.status(500).json({

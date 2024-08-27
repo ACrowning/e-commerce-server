@@ -6,15 +6,14 @@ export async function addProductToCart(
   id: string,
   userId: string,
   productId: string,
-  amount: number,
-  price: number
+  amount: number
 ): Promise<{
   data: ShopCart | null;
   errorMessage: string | null;
   errorRaw: Error | null;
 }> {
   const query = await readSqlFile("add_product_to_cart.sql");
-  const values = [id, userId, productId, amount, price];
+  const values = [id, userId, productId, amount];
 
   try {
     const result = await pool.query(query, values);
