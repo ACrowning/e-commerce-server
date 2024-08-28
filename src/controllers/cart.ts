@@ -30,8 +30,9 @@ Router.get("/:userId", async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
 
   try {
-    const { data: allProducts, errorMessage } =
-      await cartService.getAllProductsInCart(userId);
+    const { data: allProducts, errorMessage } = await cartService.getCartItems(
+      userId
+    );
 
     if (errorMessage) {
       res.status(500).json({
@@ -46,31 +47,49 @@ Router.get("/:userId", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-Router.put("/:id", (req: any, res: any) => {
-  const productId = req.params.id;
-  const updatedItemData = req.body;
-  const result: any = cartService.updateProductAmount(
-    productId,
-    updatedItemData
-  );
-  if (result.success) {
-    res
-      .status(200)
-      .json({ message: "Item updated successfully", data: productId });
-  } else {
-    res.status(404).json({ message: "Not found" });
+Router.put("/update", async (req: Request, res: Response): Promise<void> => {
+  const { cartItemId, userId, amount } = req.body;
+
+  try {
+    const { data: updatedItem, errorMessage } =
+      await cartService.updateCartItem(cartItemId, userId, amount);
+
+    if (errorMessage) {
+      res.status(500).json({
+        message: "Failed to update cart item",
+        error: errorMessage,
+      });
+    } else if (updatedItem) {
+      res.status(200).json({
+        message: "Cart item updated successfully",
+        data: updatedItem,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
   }
 });
 
-Router.delete("/:id", (req: any, res: any) => {
-  const productId = req.params.id;
-  const result: any = cartService.deleteCartItem(productId);
-  if (result.success) {
-    res
-      .status(200)
-      .json({ message: "Item deleted successfully", data: result.cartItems });
-  } else {
-    res.status(404).json({ message: "Not found" });
+Router.delete("/delete", async (req: Request, res: Response): Promise<void> => {
+  const { cartItemId, userId } = req.body;
+
+  try {
+    const { data: deletedItem, errorMessage } =
+      await cartService.deleteCartItem(cartItemId, userId);
+
+    if (errorMessage) {
+      res.status(500).json({
+        message: "Failed to delete cart item",
+        error: errorMessage,
+      });
+    } else if (deletedItem) {
+      res.status(200).json({
+        message: "Cart item deleted successfully",
+        data: deletedItem,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Unknown error occurred" });
   }
 });
 

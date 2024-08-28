@@ -2,7 +2,9 @@ import { products } from "../database/elements";
 import { cartItems, ShopCart } from "../database/cartItems";
 import {
   addProductToCart as dbAddProductToCart,
-  getAllProductsInCart as dbGetAllProductsInCart,
+  getCartItems as dbGetCartItems,
+  updateCartItem as dbUpdateCartItem,
+  deleteCartItem as dbDeleteCartItem,
 } from "../database/repositories/shopCart";
 import ShortUniqueId from "short-unique-id";
 
@@ -29,14 +31,14 @@ const cartService = {
     };
   },
 
-  getAllProductsInCart: async (
+  getCartItems: async (
     userId: string
   ): Promise<{
-    data: ShopCart[] | null;
+    data: any[] | null;
     errorMessage: string | null;
     errorRaw: Error | null;
   }> => {
-    const response = await dbGetAllProductsInCart(userId);
+    const response = await dbGetCartItems(userId);
 
     return {
       data: response.data,
@@ -45,29 +47,39 @@ const cartService = {
     };
   },
 
-  updateProductAmount: (productId: any, updatedItemData: any) => {
-    const index = cartItems.findIndex((item: any) => item.id === productId);
-    if (index !== -1) {
-      cartItems[index] = {
-        ...cartItems[index],
-        ...updatedItemData,
-      };
-      return { success: true };
-    }
+  updateCartItem: async (
+    cartItemId: string,
+    userId: string,
+    amount: number
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbUpdateCartItem(cartItemId, userId, amount);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  deleteCartItem: (productId: any) => {
-    const indexCart: any = cartItems.findIndex(
-      (item: any) => item.id === productId
-    );
-    if (indexCart !== -1) {
-      cartItems.splice(indexCart, 1);
-      const indexElement = products.find((item: any) => item.id === productId);
-      if (indexElement) {
-        indexElement.amount += indexCart.amount;
-      }
-      return { success: true, cartItems: cartItems };
-    }
+  deleteCartItem: async (
+    cartItemId: string,
+    userId: string
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbDeleteCartItem(cartItemId, userId);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 };
 
