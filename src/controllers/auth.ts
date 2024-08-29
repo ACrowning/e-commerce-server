@@ -37,14 +37,18 @@ Router.post(
       res
         .status(500)
         .json({ message: "Failed to register user", error: errorMessage });
-    } else if (newUser) {
+      return;
+    }
+
+    if (newUser) {
       const { user, token } = newUser;
       res
         .status(201)
         .json({ message: "User registered successfully", user, token });
-    } else {
-      res.status(500).json({ message: "Unknown error occurred" });
+      return;
     }
+
+    res.status(500).json({ message: "Unknown error occurred" });
   }
 );
 
@@ -80,7 +84,8 @@ Router.post(
 Router.get("/user", requireLogin, async (req: Request, res: Response) => {
   const token = req.header("Authorization")?.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ message: "No token provided" });
+    res.status(401).json({ message: "No token provided" });
+    return;
   }
 
   try {
@@ -90,11 +95,12 @@ Router.get("/user", requireLogin, async (req: Request, res: Response) => {
     );
 
     if (errorMessage) {
-      return res.status(404).json({ message: errorMessage });
+      res.status(404).json({ message: errorMessage });
+      return;
     }
 
     res.status(200).json({ user });
-  } catch (error) {
+  } catch {
     res.status(401).json({ message: "Invalid token" });
   }
 });

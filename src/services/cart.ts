@@ -1,44 +1,85 @@
 import { products } from "../database/elements";
-import { cartItems } from "../database/cartItems";
+import { cartItems, ShopCart } from "../database/cartItems";
+import {
+  addProductToCart as dbAddProductToCart,
+  getCartItems as dbGetCartItems,
+  updateCartItem as dbUpdateCartItem,
+  deleteCartItem as dbDeleteCartItem,
+} from "../database/repositories/shopCart";
+import ShortUniqueId from "short-unique-id";
+
+const uid = new ShortUniqueId({ length: 10 });
 
 const cartService = {
-  getCart: () => {
-    return cartItems;
+  addProductToCart: async (
+    userId: string,
+    productId: string,
+    amount: number
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const id = uid.rnd();
+
+    const response = await dbAddProductToCart(id, userId, productId, amount);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  addItemToCart: (newItem: any) => {
-    const existingItemIndex = cartItems.findIndex(
-      (item: any) => item.id === newItem.id
-    );
-    if (existingItemIndex !== -1) {
-      cartItems[existingItemIndex].amount += newItem.amount;
-    } else {
-      cartItems.push(newItem);
-    }
-    return { success: true, cartItems: cartItems };
+  getCartItems: async (
+    userId: string
+  ): Promise<{
+    data: any[] | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbGetCartItems(userId);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  updateProductAmount: (productId: any, updatedItemData: any) => {
-    const index = cartItems.findIndex((item: any) => item.id === productId);
-    if (index !== -1) {
-      cartItems[index] = {
-        ...cartItems[index],
-        ...updatedItemData,
-      };
-      return { success: true };
-    }
+  updateCartItem: async (
+    cartItemId: string,
+    userId: string,
+    amount: number
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbUpdateCartItem(cartItemId, userId, amount);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  deleteCartItem: (productId: any) => {
-    const indexCart: any = cartItems.findIndex((item: any) => item.id === productId);
-    if (indexCart !== -1) {
-      cartItems.splice(indexCart, 1);
-      const indexElement = products.find((item: any) => item.id === productId);
-      if (indexElement) {
-        indexElement.amount += indexCart.amount;
-      }
-      return { success: true, cartItems: cartItems };
-    }
+  deleteCartItem: async (
+    cartItemId: string,
+    userId: string
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbDeleteCartItem(cartItemId, userId);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 };
 
