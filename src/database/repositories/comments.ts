@@ -2,9 +2,6 @@ import { pool } from "../../db";
 import { Comment } from "../../types/comments";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
-import ShortUniqueId from "short-unique-id";
-
-const uid = new ShortUniqueId({ length: 10 });
 
 export interface RepositoryResponse<T> {
   data: T | null;

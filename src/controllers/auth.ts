@@ -42,14 +42,11 @@ Router.post(
       return;
     }
 
-    if (newUser) {
-      const { user, token } = newUser;
-      res.status(201).json({
-        message: "User registered successfully",
-        error: null,
-        data: { user, token },
-      });
-    }
+    res.status(201).json({
+      message: "User registered successfully",
+      error: null,
+      data: newUser,
+    });
   }
 );
 
@@ -81,17 +78,17 @@ Router.post(
       });
     }
 
-    const { user, token } = data;
     res.status(200).json({
       message: "Login successful",
       error: null,
-      data: { user, token },
+      data: data,
     });
   }
 );
 
 Router.get("/user", requireLogin, async (req: Request, res: Response) => {
   const token = req.header("Authorization")?.split(" ")[1];
+
   if (!token) {
     return res.status(401).json({
       message: "No token provided",
@@ -100,34 +97,27 @@ Router.get("/user", requireLogin, async (req: Request, res: Response) => {
     });
   }
 
-  try {
-    const decoded = jwt.verify(token, SECRET_KEY) as { id: string };
-    const {
-      data: user,
-      errorMessage,
-      errorRaw,
-    } = await userService.findUserById(decoded.id);
+  const decoded = jwt.verify(token, SECRET_KEY) as { id: string };
 
-    if (errorMessage) {
-      return res.status(404).json({
-        message: errorMessage,
-        error: errorRaw,
-        data: null,
-      });
-    }
+  const {
+    data: user,
+    errorMessage,
+    errorRaw,
+  } = await userService.findUserById(decoded.id);
 
-    res.status(200).json({
-      message: "User retrieved successfully",
-      error: null,
-      data: user,
-    });
-  } catch (error: any) {
-    res.status(401).json({
-      message: "Invalid token",
-      error: error.message,
+  if (errorMessage) {
+    return res.status(404).json({
+      message: errorMessage,
+      error: errorRaw,
       data: null,
     });
   }
+
+  res.status(200).json({
+    message: "User retrieved successfully",
+    error: null,
+    data: user,
+  });
 });
 
 Router.get("/protected", requireLogin, (req: Request, res: Response) => {
