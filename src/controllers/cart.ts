@@ -3,96 +3,100 @@ import { cartService } from "../services/cart";
 
 const Router = express.Router();
 
-Router.post("/add", async (req: Request, res: Response): Promise<void> => {
+Router.post("/add", async (req: Request, res: Response) => {
   const { userId, productId, amount } = req.body;
 
-  const { data: newProduct, errorMessage } = await cartService.addProductToCart(
-    userId,
-    productId,
-    amount
-  );
+  const {
+    data: newProduct,
+    errorMessage,
+    errorRaw,
+  } = await cartService.addProductToCart(userId, productId, amount);
 
   if (errorMessage) {
-    res.status(500).json({
-      message: "Failed to add product to cart",
-      error: errorMessage,
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
     });
-    return;
   }
 
-  if (newProduct) {
-    res.status(201).json({
-      message: "Product added to cart successfully",
-      data: newProduct,
-    });
-  }
+  res.status(201).json({
+    message: "Product added to cart successfully",
+    error: null,
+    data: newProduct,
+  });
 });
 
-Router.get("/:userId", async (req: Request, res: Response): Promise<void> => {
+Router.get("/:userId", async (req: Request, res: Response) => {
   const { userId } = req.params;
 
-  const { data: allProducts, errorMessage } = await cartService.getCartItems(
-    userId
-  );
+  const {
+    data: allProducts,
+    errorMessage,
+    errorRaw,
+  } = await cartService.getCartItems(userId);
 
   if (errorMessage) {
-    res.status(500).json({
-      message: "Failed to retrieve products from cart",
-      error: errorMessage,
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
     });
-    return;
   }
 
-  res.status(200).json({ data: allProducts });
+  res.status(200).json({
+    message: "Products retrieved from cart successfully",
+    error: null,
+    data: allProducts,
+  });
 });
 
-Router.put("/update", async (req: Request, res: Response): Promise<void> => {
+Router.put("/update", async (req: Request, res: Response) => {
   const { cartItemId, userId, amount } = req.body;
 
-  const { data: updatedItem, errorMessage } = await cartService.updateCartItem(
-    cartItemId,
-    userId,
-    amount
-  );
+  const {
+    data: updatedItem,
+    errorMessage,
+    errorRaw,
+  } = await cartService.updateCartItem(cartItemId, userId, amount);
 
   if (errorMessage) {
-    res.status(500).json({
-      message: "Failed to update cart item",
-      error: errorMessage,
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
     });
-    return;
   }
 
-  if (updatedItem) {
-    res.status(200).json({
-      message: "Cart item updated successfully",
-      data: updatedItem,
-    });
-  }
+  res.status(200).json({
+    message: "Cart item updated successfully",
+    error: null,
+    data: updatedItem,
+  });
 });
 
-Router.delete("/delete", async (req: Request, res: Response): Promise<void> => {
+Router.delete("/delete", async (req: Request, res: Response) => {
   const { cartItemId, userId } = req.body;
 
-  const { data: deletedItem, errorMessage } = await cartService.deleteCartItem(
-    cartItemId,
-    userId
-  );
+  const {
+    data: deletedItem,
+    errorMessage,
+    errorRaw,
+  } = await cartService.deleteCartItem(cartItemId, userId);
 
   if (errorMessage) {
-    res.status(500).json({
-      message: "Failed to delete cart item",
-      error: errorMessage,
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
     });
-    return;
   }
 
-  if (deletedItem) {
-    res.status(200).json({
-      message: "Cart item deleted successfully",
-      data: deletedItem,
-    });
-  }
+  res.status(200).json({
+    message: "Cart item deleted successfully",
+    error: null,
+    data: deletedItem,
+  });
 });
 
 export default Router;

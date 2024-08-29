@@ -1,5 +1,3 @@
-const cartItems: any[] = [];
-
 export interface ShopCart {
   id: string;
   userId: string;
@@ -7,5 +5,3 @@ export interface ShopCart {
   amount: number;
   price: number;
 }
-
-export { cartItems };

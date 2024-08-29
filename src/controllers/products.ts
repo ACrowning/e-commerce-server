@@ -17,87 +17,108 @@ Router.post("/", async (req: Request, res: Response) => {
     limit: limit === "*" ? "*" : limit ? parseInt(limit, 10) : 10,
   };
 
-  const { data, errorMessage } = await productService.getProducts(params);
+  const { data, errorMessage, errorRaw } = await productService.getProducts(
+    params
+  );
 
   if (errorMessage) {
-    res.status(500).json({ data: [], error: errorMessage });
-    return;
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
   }
 
-  res.status(200).json({ data, error: null });
+  res.status(200).json({
+    message: "Products fetched successfully",
+    error: null,
+    data,
+  });
 });
 
 Router.use(fileUpload());
 
-Router.post("/create", requireLogin, adminOnly, async (req: any, res: any) => {
-  const { title, amount, price, favorite } = req.body;
-  const image = req.files?.image || null;
-  const albumPhotos = req.files?.albumPhotos || [];
+Router.post(
+  "/create",
+  requireLogin,
+  adminOnly,
+  async (req: Request, res: Response) => {
+    const { title, amount, price, favorite } = req.body;
+    const image = req.files?.image || null;
+    const albumPhotos = req.files?.albumPhotos || [];
 
-  const albumPhotosArray = Array.isArray(albumPhotos)
-    ? albumPhotos
-    : [albumPhotos];
+    const albumPhotosArray = Array.isArray(albumPhotos)
+      ? albumPhotos
+      : [albumPhotos];
 
-  const { data, errorMessage } = await productService.createProduct(
-    title,
-    amount,
-    price,
-    favorite,
-    image,
-    albumPhotosArray
-  );
+    const { data, errorMessage, errorRaw } = await productService.createProduct(
+      title,
+      amount,
+      price,
+      favorite,
+      image,
+      albumPhotosArray
+    );
 
-  if (errorMessage) {
-    res.status(500).json({ data: null, error: errorMessage });
-    return;
+    if (errorMessage) {
+      return res.status(500).json({
+        message: errorMessage,
+        error: errorRaw,
+        data: null,
+      });
+    }
+
+    res.status(201).json({
+      message: "Product created successfully",
+      error: null,
+      data,
+    });
   }
+);
 
-  res
-    .status(201)
-    .json({ message: "Product created successfully", data, error: null });
-});
-
-Router.put("/:id", requireLogin, async (req, res) => {
+Router.put("/:id", requireLogin, async (req: Request, res: Response) => {
   const productId = req.params.id;
 
-  const { data, errorMessage } = await productService.editTitle(
+  const { data, errorMessage, errorRaw } = await productService.editTitle(
     productId,
     req.body
   );
 
   if (errorMessage) {
-    res.status(500).json({ data: null, error: errorMessage });
-    return;
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
   }
 
-  res
-    .status(200)
-    .json({ message: "Element updated successfully", data, error: null });
+  res.status(200).json({
+    message: "Element updated successfully",
+    error: null,
+    data,
+  });
 });
 
-Router.delete("/:id", requireLogin, async (req, res) => {
+Router.delete("/:id", requireLogin, async (req: Request, res: Response) => {
   const productId = req.params.id;
 
-  const { data, errorMessage } = await productService.deleteProduct(productId);
+  const { data, errorMessage, errorRaw } = await productService.deleteProduct(
+    productId
+  );
 
   if (errorMessage) {
-    res.status(500).json({ data: null, error: errorMessage });
-    return;
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
   }
 
-  res
-    .status(200)
-    .json({ message: "Element deleted successfully", data, error: null });
-});
-
-Router.get("/:id", async (req, res) => {
-  const productId = req.params.id;
-  const element = productService.getElementById(productId);
-  if (element) {
-    res.json({ data: element });
-  } else {
-    res.status(404).json({ message: "Not found" });
-  }
+  res.status(200).json({
+    message: "Element deleted successfully",
+    error: null,
+    data,
+  });
 });
 
 export default Router;
