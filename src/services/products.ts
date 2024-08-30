@@ -1,4 +1,4 @@
-import { Product } from "../database/elements";
+import { Product } from "../types/products";
 import {
   createProduct as dbCreateProduct,
   getProducts as dbGetProducts,
@@ -6,7 +6,7 @@ import {
   updateProduct as dbUpdateProduct,
 } from "../database/repositories/products";
 import fs from "fs/promises";
-import { comments } from "../database/comments";
+
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
 
@@ -81,33 +81,6 @@ const productService = {
     }
 
     return deletedProduct;
-  },
-
-  getElementById: async (productId: string) => {
-    const productsResponse = await dbGetProducts({
-      title: "",
-      sortByPrice: undefined,
-      page: 1,
-      limit: "*",
-    });
-
-    if (productsResponse.data) {
-      const product = productsResponse.data.find(
-        (product: Product) => product.id === productId
-      );
-
-      if (product) {
-        const productComments = comments.filter(
-          (comment: { productId: any }) => comment.productId === productId
-        );
-        return {
-          ...product,
-          comments: productComments,
-        };
-      }
-      return null;
-    }
-    return null;
   },
 };
 

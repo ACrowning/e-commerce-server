@@ -1,5 +1,5 @@
 import { pool } from "../../db";
-import { Product } from "../elements";
+import { Product } from "../../types/products";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
 

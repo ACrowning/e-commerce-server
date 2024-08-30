@@ -1,5 +1,5 @@
 import { pool } from "../../db";
-import { User, UserRequest, UserResponse } from "../users";
+import { User, UserRequest, UserResponse } from "../../types/users";
 import { QueryResult } from "pg";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../../config/config";

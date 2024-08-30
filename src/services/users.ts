@@ -1,4 +1,4 @@
-import { User, UserRequest, UserResponse } from "../database/users";
+import { User, UserRequest, UserResponse } from "../types/users";
 import {
   addUser as dbAddUser,
   findUserByEmail as dbFindUserByEmail,

@@ -1,5 +1,5 @@
 import { pool } from "../../db";
-import { ShopCart } from "../cartItems";
+import { ShopCart } from "../../types/cart";
 import { readSqlFile } from "..";
 
 export async function addProductToCart(

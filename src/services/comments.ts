@@ -1,5 +1,5 @@
 import ShortUniqueId from "short-unique-id";
-import { User, Comment } from "../database/comments";
+import { Comment } from "../types/comments";
 import {
   getAllComments as dbGetComments,
   findCommentsByProductId as dbGetCommentsByProductId,

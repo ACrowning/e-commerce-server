@@ -1,5 +1,4 @@
-import { products } from "../database/elements";
-import { cartItems, ShopCart } from "../database/cartItems";
+import { ShopCart } from "../types/cart";
 import {
   addProductToCart as dbAddProductToCart,
   getCartItems as dbGetCartItems,

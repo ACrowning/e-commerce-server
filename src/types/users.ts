@@ -19,5 +19,3 @@ export interface UserResponse {
   user: User;
   token: string;
 }
-
-export const users: User[] = [];
