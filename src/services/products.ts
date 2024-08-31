@@ -4,9 +4,9 @@ import {
   getProducts as dbGetProducts,
   deleteProduct as dbDeleteProduct,
   updateProduct as dbUpdateProduct,
+  RepositoryResponse,
 } from "../database/repositories/products";
 import fs from "fs/promises";
-
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
 
@@ -20,8 +20,15 @@ interface GetProductsParams {
 }
 
 const productService = {
-  getProducts: async (params: GetProductsParams) => {
-    return dbGetProducts(params);
+  getProducts: async (
+    params: GetProductsParams
+  ): Promise<RepositoryResponse<Product[]>> => {
+    const response = await dbGetProducts(params);
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
   createProduct: async (
@@ -29,10 +36,10 @@ const productService = {
     amount: number,
     price: number,
     favorite: boolean,
-    image: any,
-    albumPhotos: any[]
-  ) => {
-    const newProduct: any = {
+    image: { name: string; data: Buffer } | null,
+    albumPhotos: { name: string; data: Buffer }[]
+  ): Promise<RepositoryResponse<Product>> => {
+    const newProduct: Product = {
       id: uid.rnd(),
       title,
       amount,
@@ -43,44 +50,62 @@ const productService = {
         albumPhotos && albumPhotos.length > 0
           ? await saveAlbum(albumPhotos)
           : [],
+      album_photos: undefined,
     };
 
-    return dbCreateProduct(newProduct);
+    const response = await dbCreateProduct(newProduct);
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  editTitle: async (productId: string, updatedData: Partial<Product>) => {
-    return dbUpdateProduct(productId, updatedData);
+  editTitle: async (
+    productId: string,
+    updatedData: Partial<Product>
+  ): Promise<RepositoryResponse<Product>> => {
+    const response = await dbUpdateProduct(productId, updatedData);
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
   },
 
-  deleteProduct: async (productId: string) => {
+  deleteProduct: async (
+    productId: string
+  ): Promise<RepositoryResponse<Product>> => {
     const deletedProduct = await dbDeleteProduct(productId);
 
     if (deletedProduct.data) {
-      try {
-        if (deletedProduct.data.image) {
-          const imagePath = getImgPath(deletedProduct.data.image);
+      if (deletedProduct.data.image) {
+        const imagePath = getImgPath(deletedProduct.data.image);
+        if (imagePath) {
           await fs.unlink(imagePath);
         }
+      }
 
-        if (
-          deletedProduct.data.albumPhotos &&
-          deletedProduct.data.albumPhotos.length > 0
-        ) {
-          const deletePromises = deletedProduct.data.albumPhotos.map(
-            async (photo: string) => {
-              const photoPath = getImgPath(photo);
-              return fs.unlink(photoPath);
-            }
-          );
+      const albumPhotos = deletedProduct.data.album_photos;
 
-          await Promise.all(deletePromises);
-        }
-      } catch (error) {
-        console.error("Failed to delete product images:", error);
+      if (albumPhotos && albumPhotos.length > 0) {
+        const deletePromises = albumPhotos.map(async (photo: string | null) => {
+          const photoPath = getImgPath(photo);
+
+          if (photoPath) {
+            await fs.unlink(photoPath);
+          }
+        });
+
+        await Promise.allSettled(deletePromises);
       }
     }
 
-    return deletedProduct;
+    return {
+      data: deletedProduct.data,
+      errorMessage: deletedProduct.errorMessage,
+      errorRaw: deletedProduct.errorRaw,
+    };
   },
 };
 

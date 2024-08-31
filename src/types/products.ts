@@ -1,8 +1,5 @@
-const ShortUniqueId = require("short-unique-id");
-
-const uid = new ShortUniqueId({ length: 10 });
-
 export interface Product {
+  album_photos: any;
   id: string;
   title: string;
   amount: number;

@@ -10,7 +10,7 @@ export interface GetProductsParams {
   limit?: number | "*";
 }
 
-interface RepositoryResponse<T> {
+export interface RepositoryResponse<T> {
   data: T | null;
   errorMessage: string | null;
   errorRaw: Error | null;

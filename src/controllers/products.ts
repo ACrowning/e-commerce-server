@@ -7,6 +7,8 @@ import { GetProductsParams } from "../database/repositories/products";
 
 const Router = express.Router();
 
+Router.use(fileUpload());
+
 Router.post("/", async (req: Request, res: Response) => {
   const { title, sortByPrice, page, limit } = req.body;
 
@@ -36,27 +38,41 @@ Router.post("/", async (req: Request, res: Response) => {
   });
 });
 
-Router.use(fileUpload());
-
 Router.post(
   "/create",
   requireLogin,
   adminOnly,
   async (req: Request, res: Response) => {
     const { title, amount, price, favorite } = req.body;
-    const image = req.files?.image || null;
-    const albumPhotos = req.files?.albumPhotos || [];
 
-    const albumPhotosArray = Array.isArray(albumPhotos)
-      ? albumPhotos
-      : [albumPhotos];
+    const image = req.files?.image;
+    const albumPhotos = req.files?.albumPhotos;
+
+    const imageFile =
+      image && !Array.isArray(image)
+        ? { name: image.name as string, data: image.data as Buffer }
+        : null;
+
+    const albumPhotosArray = albumPhotos
+      ? Array.isArray(albumPhotos)
+        ? albumPhotos.map((photo) => ({
+            name: photo.name as string,
+            data: photo.data as Buffer,
+          }))
+        : [
+            {
+              name: albumPhotos.name as string,
+              data: albumPhotos.data as Buffer,
+            },
+          ]
+      : [];
 
     const { data, errorMessage, errorRaw } = await productService.createProduct(
       title,
       amount,
       price,
       favorite,
-      image,
+      imageFile,
       albumPhotosArray
     );
 
