@@ -2,12 +2,7 @@ import { pool } from "../../db";
 import { Comment } from "../../types/comments";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
-
-export interface RepositoryResponse<T> {
-  data: T | null;
-  errorMessage: string | null;
-  errorRaw: Error | null;
-}
+import { RepositoryResponse } from "../../types/repositoryResponse";
 
 export async function addComment(
   id: string,

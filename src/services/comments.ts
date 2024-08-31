@@ -6,8 +6,8 @@ import {
   addComment as dbAddComment,
   updateComment as dbUpdateComment,
   deleteComment as dbDeleteComment,
-  RepositoryResponse,
 } from "../database/repositories/comments";
+import { RepositoryResponse } from "../types/repositoryResponse";
 const uid = new ShortUniqueId({ length: 10 });
 
 const addNestedComment = (

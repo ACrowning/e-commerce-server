@@ -2,18 +2,13 @@ import { pool } from "../../db";
 import { Product } from "../../types/products";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
+import { RepositoryResponse } from "../../types/repositoryResponse";
 
 export interface GetProductsParams {
   title?: string;
   sortByPrice?: "asc" | "desc";
   page?: number;
   limit?: number | "*";
-}
-
-export interface RepositoryResponse<T> {
-  data: T | null;
-  errorMessage: string | null;
-  errorRaw: Error | null;
 }
 
 export async function createProduct(

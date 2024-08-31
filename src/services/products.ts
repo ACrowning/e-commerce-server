@@ -4,11 +4,11 @@ import {
   getProducts as dbGetProducts,
   deleteProduct as dbDeleteProduct,
   updateProduct as dbUpdateProduct,
-  RepositoryResponse,
 } from "../database/repositories/products";
 import fs from "fs/promises";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
 import ShortUniqueId from "short-unique-id";
+import { RepositoryResponse } from "../types/repositoryResponse";
 
 const uid = new ShortUniqueId({ length: 10 });
 

@@ -1,5 +1,4 @@
 export interface Product {
-  album_photos: any;
   id: string;
   title: string;
   amount: number;
@@ -7,4 +6,5 @@ export interface Product {
   favorite: boolean;
   image?: string | null;
   albumPhotos?: string[];
+  album_photos?: string[];
 }
