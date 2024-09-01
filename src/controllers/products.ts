@@ -3,7 +3,7 @@ import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
 import { requireLogin } from "../middlewares/requireLogin";
 import { adminOnly } from "../middlewares/adminOnly";
-import { GetProductsParams } from "../database/repositories/products";
+import { GetProductsParams } from "../types/products";
 
 const Router = express.Router();
 
@@ -46,26 +46,22 @@ Router.post(
     const { title, amount, price, favorite } = req.body;
 
     const image = req.files?.image;
-    const albumPhotos = req.files?.albumPhotos;
-
     const imageFile =
       image && !Array.isArray(image)
-        ? { name: image.name as string, data: image.data as Buffer }
+        ? { name: image.name, data: image.data }
         : null;
 
-    const albumPhotosArray = albumPhotos
-      ? Array.isArray(albumPhotos)
-        ? albumPhotos.map((photo) => ({
-            name: photo.name as string,
-            data: photo.data as Buffer,
-          }))
-        : [
-            {
-              name: albumPhotos.name as string,
-              data: albumPhotos.data as Buffer,
-            },
-          ]
+    const albumPhotos = req.files?.albumPhotos;
+    const photos = Array.isArray(albumPhotos)
+      ? albumPhotos
+      : albumPhotos
+      ? [albumPhotos]
       : [];
+
+    const albumPhotosArray = photos.map((photo) => ({
+      name: photo.name,
+      data: photo.data,
+    }));
 
     const { data, errorMessage, errorRaw } = await productService.createProduct(
       title,

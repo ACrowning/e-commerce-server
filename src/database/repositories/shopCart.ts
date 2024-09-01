@@ -1,15 +1,9 @@
 import { pool } from "../../db";
-import { ShopCart } from "../../types/cart";
-import { readSqlFile } from "..";
-import { Product } from "../../types/products";
-import { RepositoryResponse } from "../../types/repositoryResponse";
 
-interface CartItem {
-  cartItemId: string;
-  userId: string;
-  amount: number;
-  product: Product;
-}
+import { readSqlFile } from "..";
+
+import { RepositoryResponse } from "../../types/repositoryResponse";
+import { CartItem, ShopCart } from "../../types/cart";
 
 export async function addProductToCart(
   id: string,
@@ -51,7 +45,7 @@ export async function getCartItems(
       product: {
         id: row.product_id,
         title: row.title,
-        stock: row.product_stock,
+        amount: row.product_stock,
         price: row.price,
         favorite: row.favorite,
         image: row.image ? String(row.image) : null,

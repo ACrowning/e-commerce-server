@@ -1,4 +1,4 @@
-import { Product } from "../types/products";
+import { GetProductsParams, Product } from "../types/products";
 import {
   createProduct as dbCreateProduct,
   getProducts as dbGetProducts,
@@ -11,13 +11,6 @@ import ShortUniqueId from "short-unique-id";
 import { RepositoryResponse } from "../types/repositoryResponse";
 
 const uid = new ShortUniqueId({ length: 10 });
-
-interface GetProductsParams {
-  title?: string;
-  sortByPrice?: "asc" | "desc";
-  page?: number;
-  limit?: number | "*";
-}
 
 const productService = {
   getProducts: async (
@@ -50,7 +43,6 @@ const productService = {
         albumPhotos && albumPhotos.length > 0
           ? await saveAlbum(albumPhotos)
           : [],
-      album_photos: undefined,
     };
 
     const response = await dbCreateProduct(newProduct);
@@ -86,18 +78,20 @@ const productService = {
         }
       }
 
-      const albumPhotos = deletedProduct.data.album_photos;
-
-      if (albumPhotos && albumPhotos.length > 0) {
-        const deletePromises = albumPhotos.map(async (photo: string | null) => {
-          const photoPath = getImgPath(photo);
-
-          if (photoPath) {
-            await fs.unlink(photoPath);
+      if (
+        deletedProduct.data.albumPhotos &&
+        deletedProduct.data.albumPhotos.length > 0
+      ) {
+        const deletePromises = deletedProduct.data.albumPhotos.map(
+          async (photo) => {
+            const photoPath = getImgPath(photo);
+            if (photoPath) {
+              return fs.unlink(photoPath);
+            }
           }
-        });
+        );
 
-        await Promise.allSettled(deletePromises);
+        await Promise.all(deletePromises);
       }
     }
 

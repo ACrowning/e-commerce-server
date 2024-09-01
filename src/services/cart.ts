@@ -1,4 +1,4 @@
-import { ShopCart } from "../types/cart";
+import { CartItem, ShopCart } from "../types/cart";
 import {
   addProductToCart as dbAddProductToCart,
   getCartItems as dbGetCartItems,
@@ -33,7 +33,7 @@ const cartService = {
   getCartItems: async (
     userId: string
   ): Promise<{
-    data: any[] | null;
+    data: CartItem[] | null;
     errorMessage: string | null;
     errorRaw: Error | null;
   }> => {

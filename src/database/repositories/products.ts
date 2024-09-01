@@ -1,14 +1,19 @@
 import { pool } from "../../db";
-import { Product } from "../../types/products";
+import { GetProductsParams, Product, ProductRow } from "../../types/products";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
 import { RepositoryResponse } from "../../types/repositoryResponse";
 
-export interface GetProductsParams {
-  title?: string;
-  sortByPrice?: "asc" | "desc";
-  page?: number;
-  limit?: number | "*";
+function mapProductRowToProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    title: row.title,
+    amount: row.amount,
+    price: row.price,
+    favorite: row.favorite,
+    image: row.image,
+    albumPhotos: row.album_photos,
+  };
 }
 
 export async function createProduct(
@@ -29,7 +34,8 @@ export async function createProduct(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows[0], errorMessage: null, errorRaw: null };
+    const mappedProduct = mapProductRowToProduct(result.rows[0]);
+    return { data: mappedProduct, errorMessage: null, errorRaw: null };
   } catch (error) {
     return {
       data: null,
@@ -44,27 +50,39 @@ export async function getProducts(
 ): Promise<RepositoryResponse<Product[]>> {
   const { title, sortByPrice, page = 1, limit = 10 } = params;
 
-  let query = "SELECT * FROM products";
-  const values: any[] = [];
+  let query = await readSqlFile("get_products.sql");
+  const values: (string | number)[] = [];
+  let valueIndex = 1;
 
   if (title) {
+    const searchQuery = await readSqlFile("get_products_search.sql");
     values.push(`%${title}%`);
-    query += ` WHERE title ILIKE $${values.length}`;
+    query += ` ${searchQuery.replace("$1", `$${valueIndex}`)}`;
+    valueIndex++;
   }
 
   if (sortByPrice) {
-    query += ` ORDER BY price ${sortByPrice === "asc" ? "ASC" : "DESC"}`;
+    let sortQuery = await readSqlFile("get_products_sort_by_price.sql");
+    sortQuery = sortQuery.replace(
+      "ASC",
+      sortByPrice === "asc" ? "ASC" : "DESC"
+    );
+    query += ` ${sortQuery}`;
   }
 
   if (limit !== "*") {
+    const paginationQuery = await readSqlFile("get_products_pagination.sql");
     const offset = (page - 1) * limit;
     values.push(limit, offset);
-    query += ` LIMIT $${values.length - 1} OFFSET $${values.length}`;
+    query += ` ${paginationQuery
+      .replace("$1", `$${valueIndex}`)
+      .replace("$2", `$${valueIndex + 1}`)}`;
   }
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows, errorMessage: null, errorRaw: null };
+    const mappedProducts = result.rows.map(mapProductRowToProduct);
+    return { data: mappedProducts, errorMessage: null, errorRaw: null };
   } catch (error) {
     return {
       data: null,
@@ -83,7 +101,9 @@ export async function deleteProduct(productId: string): Promise<{
     const query = await readSqlFile("delete_product.sql");
 
     const result: QueryResult<Product> = await pool.query(query, [productId]);
-    return { data: result.rows[0] || null, errorMessage: null, errorRaw: null };
+    const mappedProduct =
+      result.rows.length > 0 ? mapProductRowToProduct(result.rows[0]) : null;
+    return { data: mappedProduct, errorMessage: null, errorRaw: null };
   } catch (error) {
     return {
       data: null,
@@ -107,12 +127,14 @@ export async function updateProduct(
     price,
     favorite,
     image,
-    albumPhotos,
+    JSON.stringify(albumPhotos),
   ];
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows[0] || null, errorMessage: null, errorRaw: null };
+    const mappedProduct =
+      result.rows.length > 0 ? mapProductRowToProduct(result.rows[0]) : null;
+    return { data: mappedProduct, errorMessage: null, errorRaw: null };
   } catch (error) {
     return {
       data: null,
