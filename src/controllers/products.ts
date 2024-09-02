@@ -52,13 +52,10 @@ Router.post(
         : null;
 
     const albumPhotos = req.files?.albumPhotos;
-    const photos = Array.isArray(albumPhotos)
-      ? albumPhotos
-      : albumPhotos
-      ? [albumPhotos]
-      : [];
+    const photos =
+      albumPhotos && Array.isArray(albumPhotos) ? albumPhotos : [albumPhotos];
 
-    const albumPhotosArray = photos.map((photo) => ({
+    const albumPhotosArray = photos.map((photo: any) => ({
       name: photo.name,
       data: photo.data,
     }));

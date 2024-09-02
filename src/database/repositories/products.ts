@@ -52,37 +52,25 @@ export async function getProducts(
 
   let query = await readSqlFile("get_products.sql");
   const values: (string | number)[] = [];
-  let valueIndex = 1;
 
   if (title) {
-    const searchQuery = await readSqlFile("get_products_search.sql");
     values.push(`%${title}%`);
-    query += ` ${searchQuery.replace("$1", `$${valueIndex}`)}`;
-    valueIndex++;
+    query += ` WHERE title ILIKE $${values.length}`;
   }
 
   if (sortByPrice) {
-    let sortQuery = await readSqlFile("get_products_sort_by_price.sql");
-    sortQuery = sortQuery.replace(
-      "ASC",
-      sortByPrice === "asc" ? "ASC" : "DESC"
-    );
-    query += ` ${sortQuery}`;
+    query += ` ORDER BY price ${sortByPrice === "asc" ? "ASC" : "DESC"}`;
   }
 
   if (limit !== "*") {
-    const paginationQuery = await readSqlFile("get_products_pagination.sql");
     const offset = (page - 1) * limit;
     values.push(limit, offset);
-    query += ` ${paginationQuery
-      .replace("$1", `$${valueIndex}`)
-      .replace("$2", `$${valueIndex + 1}`)}`;
+    query += ` LIMIT $${values.length - 1} OFFSET $${values.length}`;
   }
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    const mappedProducts = result.rows.map(mapProductRowToProduct);
-    return { data: mappedProducts, errorMessage: null, errorRaw: null };
+    return { data: result.rows, errorMessage: null, errorRaw: null };
   } catch (error) {
     return {
       data: null,
