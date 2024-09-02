@@ -5,14 +5,9 @@ import jwt from "jsonwebtoken";
 import { SECRET_KEY } from "../../config/config";
 import ShortUniqueId from "short-unique-id";
 import { readSqlFile } from "..";
+import { RepositoryResponse } from "../../types/repositoryResponse";
 
 const uid = new ShortUniqueId({ length: 10 });
-
-interface RepositoryResponse<T> {
-  data: T | null;
-  errorMessage: string | null;
-  errorRaw: Error | null;
-}
 
 export async function addUser(
   userRequest: UserRequest

@@ -3,9 +3,11 @@ import fileUpload from "express-fileupload";
 import { productService } from "../services/products";
 import { requireLogin } from "../middlewares/requireLogin";
 import { adminOnly } from "../middlewares/adminOnly";
-import { GetProductsParams } from "../database/repositories/products";
+import { GetProductsParams } from "../types/products";
 
 const Router = express.Router();
+
+Router.use(fileUpload());
 
 Router.post("/", async (req: Request, res: Response) => {
   const { title, sortByPrice, page, limit } = req.body;
@@ -36,27 +38,34 @@ Router.post("/", async (req: Request, res: Response) => {
   });
 });
 
-Router.use(fileUpload());
-
 Router.post(
   "/create",
   requireLogin,
   adminOnly,
   async (req: Request, res: Response) => {
     const { title, amount, price, favorite } = req.body;
-    const image = req.files?.image || null;
-    const albumPhotos = req.files?.albumPhotos || [];
 
-    const albumPhotosArray = Array.isArray(albumPhotos)
-      ? albumPhotos
-      : [albumPhotos];
+    const image = req.files?.image;
+    const imageFile =
+      image && !Array.isArray(image)
+        ? { name: image.name, data: image.data }
+        : null;
+
+    const albumPhotos = req.files?.albumPhotos;
+    const photos =
+      albumPhotos && Array.isArray(albumPhotos) ? albumPhotos : [albumPhotos];
+
+    const albumPhotosArray = photos.map((photo: any) => ({
+      name: photo.name,
+      data: photo.data,
+    }));
 
     const { data, errorMessage, errorRaw } = await productService.createProduct(
       title,
       amount,
       price,
       favorite,
-      image,
+      imageFile,
       albumPhotosArray
     );
 
