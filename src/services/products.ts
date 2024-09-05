@@ -15,7 +15,7 @@ const uid = new ShortUniqueId({ length: 10 });
 const productService = {
   getProducts: async (
     params: GetProductsParams
-  ): Promise<RepositoryResponse<Product[]>> => {
+  ): Promise<RepositoryResponse<{ products: Product[]; total: number }>> => {
     const response = await dbGetProducts(params);
     return {
       data: response.data,

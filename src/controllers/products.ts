@@ -23,7 +23,7 @@ Router.post("/", async (req: Request, res: Response) => {
     params
   );
 
-  if (errorMessage) {
+  if (!data) {
     return res.status(500).json({
       message: errorMessage,
       error: errorRaw,
@@ -34,7 +34,8 @@ Router.post("/", async (req: Request, res: Response) => {
   res.status(200).json({
     message: "Products fetched successfully",
     error: null,
-    data,
+    data: data.products,
+    total: data.total,
   });
 });
 
