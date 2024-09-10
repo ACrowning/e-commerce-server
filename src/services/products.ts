@@ -1,9 +1,14 @@
-import { GetProductsParams, Product } from "../types/products";
+import {
+  GetProductByIdResponse,
+  GetProductsParams,
+  Product,
+} from "../types/products";
 import {
   createProduct as dbCreateProduct,
   getProducts as dbGetProducts,
   deleteProduct as dbDeleteProduct,
   updateProduct as dbUpdateProduct,
+  getProductById as dbGetProductById,
 } from "../database/repositories/products";
 import fs from "fs/promises";
 import { saveImage, saveAlbum, getImgPath } from "../services/uploadService";
@@ -21,6 +26,26 @@ const productService = {
       data: response.data,
       errorMessage: response.errorMessage,
       errorRaw: response.errorRaw,
+    };
+  },
+
+  getProductById: async (
+    productId: string
+  ): Promise<RepositoryResponse<GetProductByIdResponse>> => {
+    const response = await dbGetProductById(productId);
+
+    if (response.errorMessage) {
+      return {
+        data: null,
+        errorMessage: response.errorMessage,
+        errorRaw: response.errorRaw,
+      };
+    }
+
+    return {
+      data: { product: response.data! },
+      errorMessage: null,
+      errorRaw: null,
     };
   },
 

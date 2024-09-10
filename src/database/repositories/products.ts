@@ -94,6 +94,30 @@ export async function getProducts(
   }
 }
 
+export async function getProductById(
+  productId: string
+): Promise<RepositoryResponse<Product>> {
+  const query = await readSqlFile("get_product_by_id.sql");
+  const values = [productId];
+
+  try {
+    const result: QueryResult<Product> = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return { data: null, errorMessage: "Product not found", errorRaw: null };
+    }
+
+    const mappedProduct = mapProductRowToProduct(result.rows[0]);
+    return { data: mappedProduct, errorMessage: null, errorRaw: null };
+  } catch (error) {
+    return {
+      data: null,
+      errorMessage: "Error fetching product by ID",
+      errorRaw: error as Error,
+    };
+  }
+}
+
 export async function deleteProduct(productId: string): Promise<{
   data: Product | null;
   errorMessage: string | null;
