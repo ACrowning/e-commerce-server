@@ -1,13 +1,17 @@
-export interface User {
-  name: string;
-  id: string;
-}
-
 export interface Comment {
   id: string;
   productId: string;
   text: string;
   date: Date;
-  user: User;
-  comments: Comment[];
+  userId: string;
+  parentCommentId: string | null;
+}
+
+export interface CommentRow {
+  id: string;
+  product_id: string;
+  text: string;
+  date: Date;
+  user_id: string;
+  parent_comment_id: string | null;
 }
