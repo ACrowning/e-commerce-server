@@ -1,4 +1,4 @@
-import { Product } from "../services/products";
+import { Product } from "./products";
 
 export interface ShopCart {
   id: string;

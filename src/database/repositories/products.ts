@@ -47,15 +47,17 @@ export async function createProduct(
 
 export async function getProducts(
   params: GetProductsParams
-): Promise<RepositoryResponse<Product[]>> {
+): Promise<RepositoryResponse<{ products: Product[]; total: number }>> {
   const { title, sortByPrice, page = 1, limit = 10 } = params;
 
   let query = await readSqlFile("get_products.sql");
+  let countQuery = "SELECT COUNT(*) FROM products";
   const values: (string | number)[] = [];
 
   if (title) {
     values.push(`%${title}%`);
     query += ` WHERE title ILIKE $${values.length}`;
+    countQuery += ` WHERE title ILIKE $${values.length}`;
   }
 
   if (sortByPrice) {
@@ -70,11 +72,47 @@ export async function getProducts(
 
   try {
     const result: QueryResult<Product> = await pool.query(query, values);
-    return { data: result.rows, errorMessage: null, errorRaw: null };
+
+    const countResult: QueryResult<{ count: string }> = await pool.query(
+      countQuery,
+      values.slice(0, title ? 1 : 0)
+    );
+
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    return {
+      data: { products: result.rows, total },
+      errorMessage: null,
+      errorRaw: null,
+    };
   } catch (error) {
     return {
       data: null,
       errorMessage: "Error fetching products",
+      errorRaw: error as Error,
+    };
+  }
+}
+
+export async function getProductById(
+  productId: string
+): Promise<RepositoryResponse<Product>> {
+  const query = await readSqlFile("get_product_by_id.sql");
+  const values = [productId];
+
+  try {
+    const result: QueryResult<Product> = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return { data: null, errorMessage: "Product not found", errorRaw: null };
+    }
+
+    const mappedProduct = mapProductRowToProduct(result.rows[0]);
+    return { data: mappedProduct, errorMessage: null, errorRaw: null };
+  } catch (error) {
+    return {
+      data: null,
+      errorMessage: "Error fetching product by ID",
       errorRaw: error as Error,
     };
   }

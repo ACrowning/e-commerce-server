@@ -24,3 +24,7 @@ export interface GetProductsParams {
   page?: number;
   limit?: number | "*";
 }
+
+export interface GetProductByIdResponse {
+  product: Product;
+}

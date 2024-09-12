@@ -10,22 +10,6 @@ import {
 import { RepositoryResponse } from "../types/repositoryResponse";
 const uid = new ShortUniqueId({ length: 10 });
 
-const addNestedComment = (
-  commentList: Comment[],
-  newComment: Comment,
-  parentCommentId: string
-) => {
-  for (let comment of commentList) {
-    if (comment.id === parentCommentId) {
-      comment.comments.push(newComment);
-      return;
-    }
-    if (comment.comments.length > 0) {
-      addNestedComment(comment.comments, newComment, parentCommentId);
-    }
-  }
-};
-
 const commentsService = {
   getComments: async (): Promise<RepositoryResponse<Comment[]>> => {
     const response = await dbGetComments();

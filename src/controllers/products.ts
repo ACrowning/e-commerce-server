@@ -23,7 +23,7 @@ Router.post("/", async (req: Request, res: Response) => {
     params
   );
 
-  if (errorMessage) {
+  if (!data) {
     return res.status(500).json({
       message: errorMessage,
       error: errorRaw,
@@ -33,6 +33,29 @@ Router.post("/", async (req: Request, res: Response) => {
 
   res.status(200).json({
     message: "Products fetched successfully",
+    error: null,
+    data: data.products,
+    total: data.total,
+  });
+});
+
+Router.get("/:id", requireLogin, async (req: Request, res: Response) => {
+  const productId = req.params.id;
+
+  const { data, errorMessage, errorRaw } = await productService.getProductById(
+    productId
+  );
+
+  if (errorMessage) {
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
+  }
+
+  res.status(200).json({
+    message: "Product fetched successfully",
     error: null,
     data,
   });

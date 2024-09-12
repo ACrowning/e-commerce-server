@@ -1,8 +1,19 @@
 import { pool } from "../../db";
-import { Comment } from "../../types/comments";
+import { Comment, CommentRow } from "../../types/comments";
 import { QueryResult } from "pg";
 import { readSqlFile } from "..";
 import { RepositoryResponse } from "../../types/repositoryResponse";
+
+function mapCommentRowToComment(row: CommentRow): Comment {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    text: row.text,
+    date: row.date,
+    userId: row.user_id,
+    parentCommentId: row.parent_comment_id,
+  };
+}
 
 export async function addComment(
   id: string,
@@ -20,9 +31,9 @@ export async function addComment(
   const values = [id, productId, text, date, userId, parentCommentId];
 
   try {
-    const result: QueryResult<Comment> = await pool.query(query, values);
+    const result: QueryResult<CommentRow> = await pool.query(query, values);
     return {
-      data: result.rows[0] || null,
+      data: result.rows[0] ? mapCommentRowToComment(result.rows[0]) : null,
       errorMessage: null,
       errorRaw: null,
     };
@@ -42,9 +53,10 @@ export async function findCommentsByProductId(
   const values = [productId];
 
   try {
-    const result: QueryResult<Comment> = await pool.query(query, values);
+    const result: QueryResult<CommentRow> = await pool.query(query, values);
+    const comments = result.rows.map(mapCommentRowToComment);
     return {
-      data: result.rows,
+      data: comments,
       errorMessage: null,
       errorRaw: null,
     };
@@ -61,9 +73,10 @@ export async function getAllComments(): Promise<RepositoryResponse<Comment[]>> {
   const query = await readSqlFile("get_all_comments.sql");
 
   try {
-    const result: QueryResult<Comment> = await pool.query(query);
+    const result: QueryResult<CommentRow> = await pool.query(query);
+    const comments = result.rows.map(mapCommentRowToComment);
     return {
-      data: result.rows,
+      data: comments,
       errorMessage: null,
       errorRaw: null,
     };
@@ -88,9 +101,9 @@ export async function updateComment(
   const values = [newText, id];
 
   try {
-    const result: QueryResult<Comment> = await pool.query(query, values);
+    const result: QueryResult<CommentRow> = await pool.query(query, values);
     return {
-      data: result.rows[0] || null,
+      data: result.rows[0] ? mapCommentRowToComment(result.rows[0]) : null,
       errorMessage: null,
       errorRaw: null,
     };
