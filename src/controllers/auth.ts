@@ -24,8 +24,8 @@ Router.post(
       return;
     }
 
-    const { username, password, email, role } = req.body;
-    const userRequest: UserRequest = { username, password, email, role };
+    const { username, password, email, role, money } = req.body;
+    const userRequest: UserRequest = { username, password, email, role, money };
 
     const {
       data: newUser,

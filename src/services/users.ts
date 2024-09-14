@@ -29,6 +29,7 @@ const userService = {
         password: hashedPassword,
         email: userRequest.email,
         role: userRequest.role,
+        money: userRequest.money,
       };
 
       const response = await dbAddUser(newUser);

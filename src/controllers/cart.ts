@@ -27,6 +27,42 @@ Router.post("/add", async (req: Request, res: Response) => {
   });
 });
 
+Router.post("/add-with-transaction", async (req: Request, res: Response) => {
+  const { userId, productId, amount } = req.body;
+
+  const {
+    data: newProduct,
+    errorMessage,
+    errorRaw,
+  } = await cartService.addProductToCartWithTransaction(
+    userId,
+    productId,
+    amount
+  );
+
+  if (errorMessage) {
+    if (errorMessage.includes("Insufficient funds")) {
+      return res.status(400).json({
+        message: "Insufficient funds to complete the transaction",
+        error: errorRaw,
+        data: null,
+      });
+    }
+
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
+  }
+
+  res.status(201).json({
+    message: "Product added to cart and transaction processed successfully",
+    error: null,
+    data: newProduct,
+  });
+});
+
 Router.get("/:userId", async (req: Request, res: Response) => {
   const { userId } = req.params;
 

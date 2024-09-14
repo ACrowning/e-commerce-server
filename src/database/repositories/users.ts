@@ -18,6 +18,7 @@ export async function addUser(
     email: userRequest.email,
     password: userRequest.password,
     role: userRequest.role,
+    money: Number(userRequest.money) || 0,
   };
 
   const query = await readSqlFile("add_user.sql");
@@ -27,6 +28,7 @@ export async function addUser(
     newUser.email,
     newUser.password,
     newUser.role,
+    newUser.money,
   ];
 
   try {

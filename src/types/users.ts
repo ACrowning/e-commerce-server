@@ -1,11 +1,12 @@
 import { Role } from "../enums";
 
 export interface User {
-  id: any;
+  id: string;
   username: string;
   password: string;
   email: string;
   role: Role;
+  money: number;
 }
 
 export interface UserRequest {
@@ -13,6 +14,7 @@ export interface UserRequest {
   password: string;
   email: string;
   role: Role;
+  money: number;
 }
 
 export interface UserResponse {
