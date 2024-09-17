@@ -9,24 +9,27 @@ export async function addProductToCartWithTransaction(
   productId: string,
   amount: number
 ): Promise<RepositoryResponse<ShopCart>> {
-  const addProductQuery = await readSqlFile("add_product_to_cart.sql");
-  const updateProductAmountQuery = await readSqlFile(
-    "update_product_stock.sql"
-  );
-  const deductUserMoneyQuery = await readSqlFile("deduct_user_money.sql");
-  const getProductPriceAndAmountQuery = await readSqlFile(
-    "get_product_price_and_stock.sql"
-  );
+  const transactionQuery = await readSqlFile("transaction_add_product.sql");
+  const checkUserBalanceQuery = await readSqlFile("check_user_balance.sql");
+  const checkProductStockQuery = await readSqlFile("check_product_stock.sql");
 
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    const productDataResult = await client.query(
-      getProductPriceAndAmountQuery,
-      [productId]
-    );
+    const userBalanceResult = await client.query(checkUserBalanceQuery, [
+      userId,
+    ]);
+    const userBalance = userBalanceResult.rows[0]?.money;
+
+    if (!userBalance) {
+      throw new Error("User not found");
+    }
+
+    const productDataResult = await client.query(checkProductStockQuery, [
+      productId,
+    ]);
     const productData = productDataResult.rows[0];
 
     if (!productData) {
@@ -34,33 +37,21 @@ export async function addProductToCartWithTransaction(
     }
 
     const { price, amount: availableAmount } = productData;
+    const totalCost = price * amount;
 
     if (availableAmount < amount) {
       throw new Error("Insufficient product amount");
     }
 
-    const totalCost = price * amount;
-    const userBalanceResult = await client.query(
-      "SELECT money FROM users WHERE id = $1",
-      [userId]
-    );
-    const userBalance = userBalanceResult.rows[0]?.money;
-
     if (userBalance < totalCost) {
       throw new Error("Insufficient funds");
     }
 
-    const addProductValues = [id, userId, productId, amount];
+    const transactionValues = [id, userId, productId, amount];
     const resultAddProduct = await client.query(
-      addProductQuery,
-      addProductValues
+      transactionQuery,
+      transactionValues
     );
-
-    const updateAmountValues = [amount, productId];
-    await client.query(updateProductAmountQuery, updateAmountValues);
-
-    const deductMoneyValues = [totalCost, userId];
-    await client.query(deductUserMoneyQuery, deductMoneyValues);
 
     await client.query("COMMIT");
 
@@ -71,16 +62,22 @@ export async function addProductToCartWithTransaction(
     };
   } catch (error) {
     await client.query("ROLLBACK");
+
+    console.error("Error in transaction:", error);
+
+    let errorMessage = "Error in transaction to add product to cart";
+
+    if (error instanceof Error) {
+      if (error.message === "Insufficient product amount") {
+        errorMessage = "Insufficient product amount";
+      } else if (error.message === "Insufficient funds") {
+        errorMessage = "Insufficient funds";
+      }
+    }
+
     return {
       data: null,
-      errorMessage:
-        error instanceof Error
-          ? error.message === "Insufficient product amount"
-            ? "Insufficient product amount"
-            : error.message === "Insufficient funds"
-            ? "Insufficient funds"
-            : "Error in transaction to add product to cart"
-          : "Unknown error",
+      errorMessage,
       errorRaw: error as Error,
     };
   } finally {
