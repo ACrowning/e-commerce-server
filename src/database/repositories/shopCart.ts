@@ -1,9 +1,110 @@
 import { pool } from "../../db";
-
 import { readSqlFile } from "..";
-
 import { RepositoryResponse } from "../../types/repositoryResponse";
 import { CartItem, ShopCart } from "../../types/cart";
+
+export async function addProductToCartWithTransaction(
+  id: string,
+  userId: string,
+  productId: string,
+  amount: number
+): Promise<RepositoryResponse<ShopCart>> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const getProductPriceAndAmountQuery = `
+      SELECT price, amount 
+      FROM products 
+      WHERE id = $1;
+    `;
+    const productDataResult = await client.query(
+      getProductPriceAndAmountQuery,
+      [productId]
+    );
+    const productData = productDataResult.rows[0];
+
+    if (!productData) {
+      return {
+        data: null,
+        errorMessage: "Product not found",
+        errorRaw: null,
+      };
+    }
+
+    const { price, amount: availableAmount } = productData;
+    const totalCost = price * amount;
+
+    if (availableAmount < amount) {
+      return {
+        data: null,
+        errorMessage: "Insufficient product amount",
+        errorRaw: null,
+      };
+    }
+
+    const getUserBalanceQuery = `
+      SELECT money 
+      FROM users 
+      WHERE id = $1;
+    `;
+    const userBalanceResult = await client.query(getUserBalanceQuery, [userId]);
+    const userBalance = userBalanceResult.rows[0]?.money;
+
+    if (userBalance < totalCost) {
+      return {
+        data: null,
+        errorMessage: "Insufficient funds",
+        errorRaw: null,
+      };
+    }
+
+    const addProductQuery = `
+      INSERT INTO ShopCart (id, user_id, product_id, amount)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+    `;
+    const addProductValues = [id, userId, productId, amount];
+    const resultAddProduct = await client.query(
+      addProductQuery,
+      addProductValues
+    );
+
+    const updateProductAmountQuery = `
+      UPDATE products
+      SET amount = amount - $1
+      WHERE id = $2;
+    `;
+    const updateAmountValues = [amount, productId];
+    await client.query(updateProductAmountQuery, updateAmountValues);
+
+    const deductUserMoneyQuery = `
+      UPDATE users
+      SET money = money - $1
+      WHERE id = $2;
+    `;
+    const deductMoneyValues = [totalCost, userId];
+    await client.query(deductUserMoneyQuery, deductMoneyValues);
+
+    await client.query("COMMIT");
+
+    return {
+      data: resultAddProduct.rows[0] || null,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return {
+      data: null,
+      errorMessage: "Error in transaction to add product to cart",
+      errorRaw: error as Error,
+    };
+  } finally {
+    client.release();
+  }
+}
 
 export async function addProductToCart(
   id: string,

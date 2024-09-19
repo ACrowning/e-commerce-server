@@ -4,6 +4,7 @@ import {
   getCartItems as dbGetCartItems,
   updateCartItem as dbUpdateCartItem,
   deleteCartItem as dbDeleteCartItem,
+  addProductToCartWithTransaction as dbAddProductToCartWithTransaction,
 } from "../database/repositories/shopCart";
 import ShortUniqueId from "short-unique-id";
 
@@ -22,6 +23,30 @@ const cartService = {
     const id = uid.rnd();
 
     const response = await dbAddProductToCart(id, userId, productId, amount);
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
+  },
+
+  addProductToCartWithTransaction: async (
+    userId: string,
+    productId: string,
+    amount: number
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const id = uid.rnd();
+    const response = await dbAddProductToCartWithTransaction(
+      id,
+      userId,
+      productId,
+      amount
+    );
 
     return {
       data: response.data,
