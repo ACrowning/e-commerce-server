@@ -26,16 +26,23 @@ export async function addProductToCartWithTransaction(
     const productData = productDataResult.rows[0];
 
     if (!productData) {
-      throw new Error("Product not found");
+      return {
+        data: null,
+        errorMessage: "Product not found",
+        errorRaw: null,
+      };
     }
 
     const { price, amount: availableAmount } = productData;
+    const totalCost = price * amount;
 
     if (availableAmount < amount) {
-      throw new Error("Insufficient product amount");
+      return {
+        data: null,
+        errorMessage: "Insufficient product amount",
+        errorRaw: null,
+      };
     }
-
-    const totalCost = price * amount;
 
     const getUserBalanceQuery = `
       SELECT money 
@@ -46,7 +53,11 @@ export async function addProductToCartWithTransaction(
     const userBalance = userBalanceResult.rows[0]?.money;
 
     if (userBalance < totalCost) {
-      throw new Error("Insufficient funds");
+      return {
+        data: null,
+        errorMessage: "Insufficient funds",
+        errorRaw: null,
+      };
     }
 
     const addProductQuery = `
