@@ -63,6 +63,43 @@ Router.post("/add-with-transaction", async (req: Request, res: Response) => {
   });
 });
 
+Router.post("/remove-with-transaction", async (req: Request, res: Response) => {
+  const { cartItemId, userId, productId, amount } = req.body;
+
+  const {
+    data: removedProduct,
+    errorMessage,
+    errorRaw,
+  } = await cartService.removeProductFromCart(
+    cartItemId,
+    userId,
+    productId,
+    amount
+  );
+
+  if (errorMessage) {
+    if (errorMessage.includes("Insufficient product amount")) {
+      return res.status(400).json({
+        message: "Insufficient product amount in stock",
+        error: errorRaw,
+        data: null,
+      });
+    }
+
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
+  }
+
+  return res.status(200).json({
+    message: "Product removed from cart and transaction processed successfully",
+    error: null,
+    data: removedProduct,
+  });
+});
+
 Router.get("/:userId", async (req: Request, res: Response) => {
   const { userId } = req.params;
 

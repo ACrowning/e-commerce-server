@@ -5,8 +5,10 @@ import {
   updateCartItem as dbUpdateCartItem,
   deleteCartItem as dbDeleteCartItem,
   addProductToCartWithTransaction as dbAddProductToCartWithTransaction,
+  removeProductFromCartWithTransaction as dbRemoveProductFromCartWithTransaction,
 } from "../database/repositories/shopCart";
 import ShortUniqueId from "short-unique-id";
+import { RepositoryResponse } from "../types/repositoryResponse";
 
 const uid = new ShortUniqueId({ length: 10 });
 
@@ -53,6 +55,42 @@ const cartService = {
       errorMessage: response.errorMessage,
       errorRaw: response.errorRaw,
     };
+  },
+
+  removeProductFromCart: async (
+    cartItemId: string,
+    userId: string,
+    productId: string,
+    amount: number
+  ): Promise<RepositoryResponse<ShopCart>> => {
+    try {
+      const result = await dbRemoveProductFromCartWithTransaction(
+        cartItemId,
+        userId,
+        productId,
+        amount
+      );
+
+      if (result.errorMessage) {
+        return {
+          data: null,
+          errorMessage: result.errorMessage,
+          errorRaw: result.errorRaw,
+        };
+      }
+
+      return {
+        data: result.data,
+        errorMessage: null,
+        errorRaw: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        errorMessage: "Failed to remove product from cart",
+        errorRaw: error as Error,
+      };
+    }
   },
 
   getCartItems: async (

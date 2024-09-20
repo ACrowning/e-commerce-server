@@ -106,6 +106,77 @@ export async function addProductToCartWithTransaction(
   }
 }
 
+export async function removeProductFromCartWithTransaction(
+  cartItemId: string,
+  userId: string,
+  productId: string,
+  amount: number
+): Promise<RepositoryResponse<ShopCart>> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const getProductPriceQuery = `
+      SELECT price 
+      FROM products 
+      WHERE id = $1;
+    `;
+    const productPriceResult = await client.query(getProductPriceQuery, [
+      productId,
+    ]);
+    const productPrice = productPriceResult.rows[0]?.price;
+
+    if (!productPrice) {
+      throw new Error("Product not found");
+    }
+
+    const totalRefund = productPrice * amount;
+
+    const removeProductQuery = `
+      DELETE FROM ShopCart 
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const resultRemoveProduct = await client.query(removeProductQuery, [
+      cartItemId,
+    ]);
+
+    const updateProductAmountQuery = `
+      UPDATE products
+      SET amount = amount + $1
+      WHERE id = $2;
+    `;
+    const updateAmountValues = [amount, productId];
+    await client.query(updateProductAmountQuery, updateAmountValues);
+
+    const refundUserMoneyQuery = `
+      UPDATE users
+      SET money = money + $1
+      WHERE id = $2;
+    `;
+    const refundMoneyValues = [totalRefund, userId];
+    await client.query(refundUserMoneyQuery, refundMoneyValues);
+
+    await client.query("COMMIT");
+
+    return {
+      data: resultRemoveProduct.rows[0] || null,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return {
+      data: null,
+      errorMessage: "Error in transaction to remove product from cart",
+      errorRaw: error as Error,
+    };
+  } finally {
+    client.release();
+  }
+}
+
 export async function addProductToCart(
   id: string,
   userId: string,
