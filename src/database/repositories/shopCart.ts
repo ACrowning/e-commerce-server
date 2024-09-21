@@ -3,6 +3,16 @@ import { readSqlFile } from "..";
 import { RepositoryResponse } from "../../types/repositoryResponse";
 import { CartItem, ShopCart } from "../../types/cart";
 
+function mapCartRowToShopCart(row: any): ShopCart {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    productId: row.product_id,
+    amount: row.amount,
+    price: row.price,
+  };
+}
+
 export async function addProductToCartWithTransaction(
   id: string,
   userId: string,
@@ -89,8 +99,10 @@ export async function addProductToCartWithTransaction(
 
     await client.query("COMMIT");
 
+    const mappedCart = mapCartRowToShopCart(resultAddProduct.rows[0]);
+
     return {
-      data: resultAddProduct.rows[0] || null,
+      data: mappedCart,
       errorMessage: null,
       errorRaw: null,
     };
@@ -159,9 +171,10 @@ export async function removeProductFromCartWithTransaction(
     await client.query(refundUserMoneyQuery, refundMoneyValues);
 
     await client.query("COMMIT");
+    const mappedCart = mapCartRowToShopCart(resultRemoveProduct.rows[0]);
 
     return {
-      data: resultRemoveProduct.rows[0] || null,
+      data: mappedCart,
       errorMessage: null,
       errorRaw: null,
     };
@@ -174,31 +187,6 @@ export async function removeProductFromCartWithTransaction(
     };
   } finally {
     client.release();
-  }
-}
-
-export async function addProductToCart(
-  id: string,
-  userId: string,
-  productId: string,
-  amount: number
-): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("add_product_to_cart.sql");
-  const values = [id, userId, productId, amount];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      data: result.rows[0] || null,
-      errorMessage: null,
-      errorRaw: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      errorMessage: "Error adding product to cart",
-      errorRaw: error as Error,
-    };
   }
 }
 
@@ -236,53 +224,6 @@ export async function getCartItems(
     return {
       data: null,
       errorMessage: "Error fetching cart items",
-      errorRaw: error as Error,
-    };
-  }
-}
-
-export async function updateCartItem(
-  cartItemId: string,
-  userId: string,
-  amount: number
-): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("update_cart_item.sql");
-  const values = [amount, cartItemId, userId];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      data: result.rows[0] || null,
-      errorMessage: null,
-      errorRaw: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      errorMessage: "Error updating cart item",
-      errorRaw: error as Error,
-    };
-  }
-}
-
-export async function deleteCartItem(
-  cartItemId: string,
-  userId: string
-): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("delete_cart_item.sql");
-  const values = [cartItemId, userId];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      data: result.rows[0] || null,
-      errorMessage: null,
-      errorRaw: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      errorMessage: "Error deleting cart item",
       errorRaw: error as Error,
     };
   }
