@@ -3,6 +3,16 @@ import { readSqlFile } from "..";
 import { RepositoryResponse } from "../../types/repositoryResponse";
 import { CartItem, ShopCart } from "../../types/cart";
 
+function mapCartRowToShopCart(row: any): ShopCart {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    productId: row.product_id,
+    amount: row.amount,
+    price: row.price,
+  };
+}
+
 export async function addProductToCartWithTransaction(
   id: string,
   userId: string,
@@ -89,8 +99,10 @@ export async function addProductToCartWithTransaction(
 
     await client.query("COMMIT");
 
+    const mappedCart = mapCartRowToShopCart(resultAddProduct.rows[0]);
+
     return {
-      data: resultAddProduct.rows[0] || null,
+      data: mappedCart,
       errorMessage: null,
       errorRaw: null,
     };
@@ -106,28 +118,75 @@ export async function addProductToCartWithTransaction(
   }
 }
 
-export async function addProductToCart(
-  id: string,
+export async function removeProductFromCartWithTransaction(
+  cartItemId: string,
   userId: string,
   productId: string,
   amount: number
 ): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("add_product_to_cart.sql");
-  const values = [id, userId, productId, amount];
+  const client = await pool.connect();
 
   try {
-    const result = await pool.query(query, values);
+    await client.query("BEGIN");
+
+    const getProductPriceQuery = `
+      SELECT price 
+      FROM products 
+      WHERE id = $1;
+    `;
+    const productPriceResult = await client.query(getProductPriceQuery, [
+      productId,
+    ]);
+    const productPrice = productPriceResult.rows[0]?.price;
+
+    if (!productPrice) {
+      throw new Error("Product not found");
+    }
+
+    const totalRefund = productPrice * amount;
+
+    const removeProductQuery = `
+      DELETE FROM ShopCart 
+      WHERE id = $1
+      RETURNING *;
+    `;
+    const resultRemoveProduct = await client.query(removeProductQuery, [
+      cartItemId,
+    ]);
+
+    const updateProductAmountQuery = `
+      UPDATE products
+      SET amount = amount + $1
+      WHERE id = $2;
+    `;
+    const updateAmountValues = [amount, productId];
+    await client.query(updateProductAmountQuery, updateAmountValues);
+
+    const refundUserMoneyQuery = `
+      UPDATE users
+      SET money = money + $1
+      WHERE id = $2;
+    `;
+    const refundMoneyValues = [totalRefund, userId];
+    await client.query(refundUserMoneyQuery, refundMoneyValues);
+
+    await client.query("COMMIT");
+    const mappedCart = mapCartRowToShopCart(resultRemoveProduct.rows[0]);
+
     return {
-      data: result.rows[0] || null,
+      data: mappedCart,
       errorMessage: null,
       errorRaw: null,
     };
   } catch (error) {
+    await client.query("ROLLBACK");
     return {
       data: null,
-      errorMessage: "Error adding product to cart",
+      errorMessage: "Error in transaction to remove product from cart",
       errorRaw: error as Error,
     };
+  } finally {
+    client.release();
   }
 }
 
@@ -165,53 +224,6 @@ export async function getCartItems(
     return {
       data: null,
       errorMessage: "Error fetching cart items",
-      errorRaw: error as Error,
-    };
-  }
-}
-
-export async function updateCartItem(
-  cartItemId: string,
-  userId: string,
-  amount: number
-): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("update_cart_item.sql");
-  const values = [amount, cartItemId, userId];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      data: result.rows[0] || null,
-      errorMessage: null,
-      errorRaw: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      errorMessage: "Error updating cart item",
-      errorRaw: error as Error,
-    };
-  }
-}
-
-export async function deleteCartItem(
-  cartItemId: string,
-  userId: string
-): Promise<RepositoryResponse<ShopCart>> {
-  const query = await readSqlFile("delete_cart_item.sql");
-  const values = [cartItemId, userId];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      data: result.rows[0] || null,
-      errorMessage: null,
-      errorRaw: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      errorMessage: "Error deleting cart item",
       errorRaw: error as Error,
     };
   }

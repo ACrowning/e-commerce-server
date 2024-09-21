@@ -1,36 +1,15 @@
 import { CartItem, ShopCart } from "../types/cart";
 import {
-  addProductToCart as dbAddProductToCart,
   getCartItems as dbGetCartItems,
-  updateCartItem as dbUpdateCartItem,
-  deleteCartItem as dbDeleteCartItem,
   addProductToCartWithTransaction as dbAddProductToCartWithTransaction,
+  removeProductFromCartWithTransaction as dbRemoveProductFromCartWithTransaction,
 } from "../database/repositories/shopCart";
 import ShortUniqueId from "short-unique-id";
+import { RepositoryResponse } from "../types/repositoryResponse";
 
 const uid = new ShortUniqueId({ length: 10 });
 
 const cartService = {
-  addProductToCart: async (
-    userId: string,
-    productId: string,
-    amount: number
-  ): Promise<{
-    data: ShopCart | null;
-    errorMessage: string | null;
-    errorRaw: Error | null;
-  }> => {
-    const id = uid.rnd();
-
-    const response = await dbAddProductToCart(id, userId, productId, amount);
-
-    return {
-      data: response.data,
-      errorMessage: response.errorMessage,
-      errorRaw: response.errorRaw,
-    };
-  },
-
   addProductToCartWithTransaction: async (
     userId: string,
     productId: string,
@@ -55,6 +34,42 @@ const cartService = {
     };
   },
 
+  removeProductFromCart: async (
+    cartItemId: string,
+    userId: string,
+    productId: string,
+    amount: number
+  ): Promise<RepositoryResponse<ShopCart>> => {
+    try {
+      const result = await dbRemoveProductFromCartWithTransaction(
+        cartItemId,
+        userId,
+        productId,
+        amount
+      );
+
+      if (result.errorMessage) {
+        return {
+          data: null,
+          errorMessage: result.errorMessage,
+          errorRaw: result.errorRaw,
+        };
+      }
+
+      return {
+        data: result.data,
+        errorMessage: null,
+        errorRaw: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        errorMessage: "Failed to remove product from cart",
+        errorRaw: error as Error,
+      };
+    }
+  },
+
   getCartItems: async (
     userId: string
   ): Promise<{
@@ -63,41 +78,6 @@ const cartService = {
     errorRaw: Error | null;
   }> => {
     const response = await dbGetCartItems(userId);
-
-    return {
-      data: response.data,
-      errorMessage: response.errorMessage,
-      errorRaw: response.errorRaw,
-    };
-  },
-
-  updateCartItem: async (
-    cartItemId: string,
-    userId: string,
-    amount: number
-  ): Promise<{
-    data: ShopCart | null;
-    errorMessage: string | null;
-    errorRaw: Error | null;
-  }> => {
-    const response = await dbUpdateCartItem(cartItemId, userId, amount);
-
-    return {
-      data: response.data,
-      errorMessage: response.errorMessage,
-      errorRaw: response.errorRaw,
-    };
-  },
-
-  deleteCartItem: async (
-    cartItemId: string,
-    userId: string
-  ): Promise<{
-    data: ShopCart | null;
-    errorMessage: string | null;
-    errorRaw: Error | null;
-  }> => {
-    const response = await dbDeleteCartItem(cartItemId, userId);
 
     return {
       data: response.data,
