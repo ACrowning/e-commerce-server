@@ -39,6 +39,30 @@ Router.post("/add", async (req: Request, res: Response) => {
   });
 });
 
+Router.put("/update", async (req: Request, res: Response) => {
+  const { cartId, productId, amount } = req.body;
+
+  const {
+    data: updatedCart,
+    errorMessage,
+    errorRaw,
+  } = await cartService.updateCartItemAmount(cartId, productId, amount);
+
+  if (errorMessage) {
+    return res.status(500).json({
+      message: errorMessage,
+      error: errorRaw,
+      data: null,
+    });
+  }
+
+  res.status(200).json({
+    message: "Cart item amount updated successfully",
+    error: null,
+    data: updatedCart,
+  });
+});
+
 Router.post("/delete", async (req: Request, res: Response) => {
   const { cartItemId, userId, productId, amount } = req.body;
 
