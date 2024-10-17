@@ -118,6 +118,116 @@ export async function addProductToCartWithTransaction(
   }
 }
 
+export async function updateCartItemAmount(
+  cartId: string,
+  productId: string,
+  newAmount: number
+): Promise<RepositoryResponse<ShopCart>> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const getCartItemQuery = `
+      SELECT amount 
+      FROM ShopCart
+      WHERE id = $1 AND product_id = $2;
+    `;
+    const cartItemResult = await client.query(getCartItemQuery, [
+      cartId,
+      productId,
+    ]);
+    const cartItem = cartItemResult.rows[0];
+
+    if (!cartItem) {
+      return {
+        data: null,
+        errorMessage: "Cart item not found",
+        errorRaw: null,
+      };
+    }
+
+    const oldAmount = cartItem.amount;
+
+    const getProductAmountQuery = `
+      SELECT amount 
+      FROM products 
+      WHERE id = $1;
+    `;
+    const productDataResult = await client.query(getProductAmountQuery, [
+      productId,
+    ]);
+    const productData = productDataResult.rows[0];
+
+    if (!productData) {
+      return {
+        data: null,
+        errorMessage: "Product not found",
+        errorRaw: null,
+      };
+    }
+
+    const { amount: availableAmount } = productData;
+
+    const amountDifference = newAmount - oldAmount;
+
+    if (amountDifference > 0 && availableAmount < amountDifference) {
+      return {
+        data: null,
+        errorMessage: "Insufficient product amount",
+        errorRaw: null,
+      };
+    }
+
+    const updateCartItemQuery = `
+      UPDATE ShopCart
+      SET amount = $1
+      WHERE id = $2 AND product_id = $3
+      RETURNING *;
+    `;
+    const updateCartValues = [newAmount, cartId, productId];
+    const resultUpdateCart = await client.query(
+      updateCartItemQuery,
+      updateCartValues
+    );
+
+    if (resultUpdateCart.rowCount === 0) {
+      return {
+        data: null,
+        errorMessage: "Cart item not found",
+        errorRaw: null,
+      };
+    }
+
+    const updateProductAmountQuery = `
+      UPDATE products
+      SET amount = amount - $1
+      WHERE id = $2;
+    `;
+    const updateProductValues = [amountDifference, productId];
+    await client.query(updateProductAmountQuery, updateProductValues);
+
+    await client.query("COMMIT");
+
+    const updatedCart = mapCartRowToShopCart(resultUpdateCart.rows[0]);
+
+    return {
+      data: updatedCart,
+      errorMessage: null,
+      errorRaw: null,
+    };
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return {
+      data: null,
+      errorMessage: "Error updating cart item",
+      errorRaw: error as Error,
+    };
+  } finally {
+    client.release();
+  }
+}
+
 export async function removeProductFromCartWithTransaction(
   cartItemId: string,
   userId: string,

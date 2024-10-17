@@ -3,6 +3,7 @@ import {
   getCartItems as dbGetCartItems,
   addProductToCartWithTransaction as dbAddProductToCartWithTransaction,
   removeProductFromCartWithTransaction as dbRemoveProductFromCartWithTransaction,
+  updateCartItemAmount as dbUpdateCartItemAmount,
 } from "../database/repositories/shopCart";
 import ShortUniqueId from "short-unique-id";
 import { RepositoryResponse } from "../types/repositoryResponse";
@@ -26,6 +27,24 @@ const cartService = {
       productId,
       amount
     );
+
+    return {
+      data: response.data,
+      errorMessage: response.errorMessage,
+      errorRaw: response.errorRaw,
+    };
+  },
+
+  updateCartItemAmount: async (
+    cartId: string,
+    productId: string,
+    amount: number
+  ): Promise<{
+    data: ShopCart | null;
+    errorMessage: string | null;
+    errorRaw: Error | null;
+  }> => {
+    const response = await dbUpdateCartItemAmount(cartId, productId, amount);
 
     return {
       data: response.data,
